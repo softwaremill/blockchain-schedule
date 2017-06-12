@@ -1,10 +1,20 @@
 // Specifically request an abstraction for Didle
 var Didle = artifacts.require("Didle");
 
+
+// the size of a character in a hex string in bytes
+const HEX_CHAR_SIZE = 4
+
+// the size to hash an integer if not explicity provided
+const DEFAULT_SIZE = 256;
+
+
 contract('Didle', function(accounts) {
 
+    var sender = accounts[0];
+    
     it("should initialize a new voting", function() {
-    var signer = accounts[0];
+    var signer = accounts[1];
     var didle;
       
     return Didle.deployed().then((instance) => {
@@ -20,7 +30,7 @@ contract('Didle', function(accounts) {
   });
 
   it("should not initialize a new voting when a voting exists for given signer", function() {
-    var signer = accounts[1];
+    var signer = accounts[2];
       
     return Didle.deployed().then((instance) => {
       return didle.create(signer, "First voting", false, ['a', 'b']);
@@ -31,8 +41,27 @@ contract('Didle', function(accounts) {
     });
   });
 
+  // -------------- sha3 utils, because web3.sha3(address) returns different result than sha3() in solidity
+  function encodeWithPadding(size, value) {
+   return typeof value === 'string'
+     // non-hex string
+     ? web3.toHex(value)
+     // numbers, big numbers, and hex strings
+     : encodeNum(size)(value)
+  }
+    
+  const encodeNum = size => value => {
+    return leftPad(web3.toHex(value < 0 ? value >>> 0 : value).slice(2), size / HEX_CHAR_SIZE, value < 0 ? 'F' : '0')
+  }
+
+  function sha3Address(address) {
+     var paddedArgs = encodeWithPadding(DEFAULT_SIZE, address);
+     return web3.sha3(paddedArgs, { encoding: 'hex' });
+  }
+  // -------------------sha3 utils  
+    
   it("should add a vote", function() {
-    var signer = accounts[2];
+    var signer = accounts[3];
     var didle;
     var createResult;
     var proposalIndex = 0; // 'a'
@@ -40,22 +69,22 @@ contract('Didle', function(accounts) {
     return Didle.deployed().then((instance) => {
       didle = instance;
       return didle.create(signer, "A huge fat party", false, ['a', 'b']);
-    }).then(() => {
-        // sign sender address with signer's private key
-        var msgToSign = "test";
-
-        var signedMsg = web3.eth.sign(signer, web3.sha3(msgToSign));        
+    }).then(r => {
+        // sign sender address with signer's private key        
+        var msgToSign = sender;
+        //console.log(r); // 0.0038 ETH 
+        var hash = sha3Address(sender); //we hash the original message to keep it as 32 bytes, regardless to the input size.
+        var signedMsg = web3.eth.sign(signer, hash);
         r = "0x" + signedMsg.slice(2, 66); //Treated as hex
         s = "0x" + signedMsg.slice(66, 130); //treated as hex
         v = new Buffer(signedMsg.slice(130, 132), "hex"); // we care for the numeric value. The Ethereum function expects uint8 and not hex.
         v = v[0].valueOf() + 27;
-        h = web3.sha3(msgToSign); //we hash the original message to keep it as 32 bytes, regardless to the input size.
 
         // signature end -> TODO extract to a lib
-        return didle.vote(signer, "Bob", proposalIndex, h, r, s, v);
-    }).then(() => {
+        return didle.vote("Bob", proposalIndex, hash, r, s, v);
+    }).then(r => {
        return didle.voteCount.call(signer, proposalIndex);
-    }).then( c => {
+    }).then(c => {
        assert.equal(c, 1);
     });
   });

@@ -1,4 +1,4 @@
-pragma solidity ^0.4.10;
+pragma solidity ^0.4.11;
 
 contract Didle {
 
@@ -48,10 +48,11 @@ contract Didle {
         votings[signer] = voting;
     }
 
-    function vote(address signer, string name, uint8 proposal, bytes32 senderHash, bytes32 r, bytes32 s, uint8 v) {
+    function vote(string name, uint8 proposal, bytes32 senderHash, bytes32 r, bytes32 s, uint8 v) {
+        require(sha3(msg.sender) == senderHash);
+        var signer = ecrecover(senderHash, v, r, s);
         var voting = votings[signer];
         require(!isEmpty(voting.name));
-        require(ecrecover(senderHash, v, r, s) == signer);
         require(!voting.isMultiChoice);
 
         var voter = voting.voters[msg.sender];
