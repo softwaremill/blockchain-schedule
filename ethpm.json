@@ -1,0 +1,8 @@
+{
+    package_name: "didle",
+    version: "1.0.0",
+    description: "Distributed doodle for collaborative scheduling over Ethereum",
+    authors: [ "Krzysztof Ciesielski" ],
+    keywords: [ "ethereum", "doodle" ],
+    license: "MIT"
+}
