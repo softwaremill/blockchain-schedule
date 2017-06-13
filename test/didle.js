@@ -161,4 +161,41 @@ contract('Didle', function(accounts) {
     });
   });
 
+  it("should overwrite a multivote", function() {
+    var signer = accounts[6];
+    var didle;
+    var createResult;
+    var yesIndex1 = 0;
+    var yesIndex2 = 2;
+    var noIndex = 1;
+
+    var voteCountIndex0 = 0;
+    var voteCountIndex1 = 0;
+    var voteCountIndex2 = 0;
+     
+    var sig = signAddress(signer, sender);
+          
+    return Didle.deployed().then((instance) => {
+      didle = instance;
+      return didle.create(signer, "Meeting at the opera2", true, ['a', 'b', 'c']);
+    }).then(() => {
+        return didle.voteMulti("Bob", [yesIndex1, yesIndex2], [noIndex], sig.h, sig.r, sig.s, sig.v);
+    }).then(() => {
+        return didle.voteMulti("Bob", [0, 1], [2], sig.h, sig.r, sig.s, sig.v);
+    }).then(() => {
+       return didle.voteCount.call(signer, 0);
+    }).then(c => {
+       voteCountIndex0 = c;
+       return didle.voteCount.call(signer, 1);
+    }).then(c => {
+       voteCountIndex1 = c;
+       return didle.voteCount.call(signer, 2);
+    }).then(c => {
+       voteCountIndex2 = c;
+       assert.equal(voteCountIndex0, 1);
+       assert.equal(voteCountIndex1, 1);
+       assert.equal(voteCountIndex2, -1);
+    });
+  });
+
 });

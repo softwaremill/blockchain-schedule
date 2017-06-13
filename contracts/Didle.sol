@@ -70,7 +70,7 @@ contract Didle {
         }        
     }
 
-    function voteMultiWrite(address signer, address sender, uint8[] yesProposals, uint8[] noProposals) internal {
+    function voteMultiWrite(address signer, uint8[] yesProposals, uint8[] noProposals) internal {
        var voting = votings[signer];
        var voter = voting.voters[msg.sender];
        for (uint i = 0; i < yesProposals.length; i++) {
@@ -92,13 +92,24 @@ contract Didle {
        var voting = votings[signer];
        require(!isEmpty(voting.name));
        require(voting.isMultiChoice);
+       // TODO reject duplicates
 
        var voter = voting.voters[msg.sender];
        if (isEmpty(voter.name)) { // first vote
            voter.name = name;
-           voteMultiWrite(signer, msg.sender, yesProposals, noProposals);
+           voteMultiWrite(signer, yesProposals, noProposals);
        }
-        // TODO support vote update
+       else {
+           for (uint i = 0; i < voter.yesIndexes.length; i++) {
+              var yesIndex = voter.yesIndexes[i];
+              voting.proposals[yesIndex].voteCount -= 1;
+           }
+           for (uint j = 0; j < voter.noIndexes.length; j++) {
+              var noIndex = voter.noIndexes[j];
+              voting.proposals[noIndex].voteCount += 1;
+           }
+           voteMultiWrite(signer, yesProposals, noProposals);
+       }
     }
 
 }
