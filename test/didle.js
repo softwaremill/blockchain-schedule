@@ -96,15 +96,15 @@ contract('Didle', function(accounts) {
     });
   });
 
-      it("should add a vote and then update it", function() {
+  it("should add a vote and then update it", function() {
     var signer = accounts[4];
     var didle;
     var createResult;
     var proposalIndex1 = 0; // 'a'
     var proposalIndex2 = 1; // 'a'
 
-    var voteCountProposalIndex1 = 0;      
-    var voteCountProposalIndex2 = 1;
+    var voteCountProposalIndex0 = 0;      
+    var voteCountProposalIndex1 = 0;
     var sig = signAddress(signer, sender);
           
     return Didle.deployed().then((instance) => {
@@ -117,12 +117,47 @@ contract('Didle', function(accounts) {
     }).then(() => {
        return didle.voteCount.call(signer, proposalIndex1);
     }).then(c => {
-       voteCountProposalIndex1 = c;
+       voteCountProposalIndex0 = c;
        return didle.voteCount.call(signer, proposalIndex2);
     }).then(c => {
-       voteCountProposalIndex2 = c;
-       assert.equal(voteCountProposalIndex1, 0);
-       assert.equal(voteCountProposalIndex2, 1);
+       voteCountProposalIndex1 = c;
+       assert.equal(voteCountProposalIndex0, 0);
+       assert.equal(voteCountProposalIndex1, 1);
+    });
+  });
+
+ it("should cast a multivote", function() {
+    var signer = accounts[5];
+    var didle;
+    var createResult;
+    var yesIndex1 = 0;
+    var yesIndex2 = 2;
+    var noIndex = 1;
+
+    var voteCountIndex0 = 0;
+    var voteCountIndex1 = 0;
+    var voteCountIndex2 = 0;
+     
+    var sig = signAddress(signer, sender);
+          
+    return Didle.deployed().then((instance) => {
+      didle = instance;
+      return didle.create(signer, "Meeting at the opera", true, ['a', 'b', 'c']);
+    }).then(() => {
+        return didle.voteMulti("Bob", [yesIndex1, yesIndex2], [noIndex], sig.h, sig.r, sig.s, sig.v);
+    }).then(() => {
+       return didle.voteCount.call(signer, 0);
+    }).then(c => {
+       voteCountIndex0 = c;
+       return didle.voteCount.call(signer, 1);
+    }).then(c => {
+       voteCountIndex1 = c;
+       return didle.voteCount.call(signer, 2);
+    }).then(c => {
+       voteCountIndex2 = c;
+       assert.equal(voteCountIndex0, 1);
+       assert.equal(voteCountIndex1, -1);
+       assert.equal(voteCountIndex2, 1);
     });
   });
 
