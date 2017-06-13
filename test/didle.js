@@ -59,6 +59,23 @@ contract('Didle', function(accounts) {
      return web3.sha3(paddedArgs, { encoding: 'hex' });
   }
   // -------------------sha3 utils  
+
+  function signAddress(signer, address) {
+        // sign sender address with signer's private key        
+        var hash = sha3Address(address); //we hash the original message to keep it as 32 bytes, regardless to the input size.
+        var signedMsg = web3.eth.sign(signer, hash);
+        vTab = new Buffer(signedMsg.slice(130, 132), "hex"); // we care for the numeric value. The Ethereum function expects uint8 and not hex.
+        var ver = vTab[0].valueOf();
+      if (ver <= 1)
+          ver += 27;
+      
+        return {
+          h: hash,          
+          r: "0x" + signedMsg.slice(2, 66), //Treated as hex,
+          s: "0x" + signedMsg.slice(66, 130), //treated as hex
+          v: ver
+      }
+  }
     
   it("should add a vote", function() {
     var signer = accounts[3];
@@ -70,18 +87,8 @@ contract('Didle', function(accounts) {
       didle = instance;
       return didle.create(signer, "A huge fat party", false, ['a', 'b']);
     }).then(r => {
-        // sign sender address with signer's private key        
-        var msgToSign = sender;
-        //console.log(r); // 0.0038 ETH 
-        var hash = sha3Address(sender); //we hash the original message to keep it as 32 bytes, regardless to the input size.
-        var signedMsg = web3.eth.sign(signer, hash);
-        r = "0x" + signedMsg.slice(2, 66); //Treated as hex
-        s = "0x" + signedMsg.slice(66, 130); //treated as hex
-        v = new Buffer(signedMsg.slice(130, 132), "hex"); // we care for the numeric value. The Ethereum function expects uint8 and not hex.
-        v = v[0].valueOf() + 27;
-
-        // signature end -> TODO extract to a lib
-        return didle.vote("Bob", proposalIndex, hash, r, s, v);
+        var sig = signAddress(signer, sender);
+        return didle.vote("Bob", proposalIndex, sig.h, sig.r, sig.s, sig.v);
     }).then(r => {
        return didle.voteCount.call(signer, proposalIndex);
     }).then(c => {
