@@ -22,7 +22,7 @@ contract Didle {
     }
 
     // Key here is the unique address generated for each voting, called "signer"
-    mapping(address => Voting) public votings;
+    mapping(address => Voting) votings;
 
     function voteCount(address signer, uint8 proposalIndex) constant returns (int128) {
         return votings[signer].proposals[proposalIndex].voteCount;
@@ -86,6 +86,20 @@ contract Didle {
        }        
     }
 
+    function cancelSenderVotes(address signer) internal {
+       var voting = votings[signer];
+       var voter = voting.voters[msg.sender];
+        for (uint i = 0; i < voter.yesIndexes.length; i++) {
+              var yesIndex = voter.yesIndexes[i];
+              voting.proposals[yesIndex].voteCount -= 1;
+           }
+           for (uint j = 0; j < voter.noIndexes.length; j++) {
+              var noIndex = voter.noIndexes[j];
+              voting.proposals[noIndex].voteCount += 1;
+           }
+        
+    }
+
     function voteMulti(string name, uint8[] yesProposals, uint8[] noProposals, bytes32 senderHash, bytes32 r, bytes32 s, uint8 v) {
        require(sha3(msg.sender) == senderHash);
        var signer = ecrecover(senderHash, v, r, s);
@@ -95,21 +109,13 @@ contract Didle {
        // TODO reject duplicates
 
        var voter = voting.voters[msg.sender];
-       if (isEmpty(voter.name)) { // first vote
+       if (isEmpty(voter.name)) {
            voter.name = name;
-           voteMultiWrite(signer, yesProposals, noProposals);
        }
        else {
-           for (uint i = 0; i < voter.yesIndexes.length; i++) {
-              var yesIndex = voter.yesIndexes[i];
-              voting.proposals[yesIndex].voteCount -= 1;
-           }
-           for (uint j = 0; j < voter.noIndexes.length; j++) {
-              var noIndex = voter.noIndexes[j];
-              voting.proposals[noIndex].voteCount += 1;
-           }
-           voteMultiWrite(signer, yesProposals, noProposals);
+           cancelSenderVotes(signer);
        }
+       voteMultiWrite(signer, yesProposals, noProposals);
     }
 
 }
