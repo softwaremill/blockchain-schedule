@@ -59,8 +59,14 @@ contract Didle {
         if (isEmpty(voter.name)) { // first vote
             voter.name = name;
             voter.voteIndexes.push(proposal);
-            voting.proposals[proposal].voteCount += 1; // TODO or -1 for "NO"?
+            voting.proposals[proposal].voteCount += 1;
         }
+        else { // vote update
+            var prevProposal = voter.voteIndexes[0];
+            voting.proposals[prevProposal].voteCount -= 1;
+            voter.voteIndexes[0] = proposal;
+            voting.proposals[proposal].voteCount += 1;            
+        }        
     }
 
 }

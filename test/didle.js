@@ -96,4 +96,34 @@ contract('Didle', function(accounts) {
     });
   });
 
+      it("should add a vote and then update it", function() {
+    var signer = accounts[4];
+    var didle;
+    var createResult;
+    var proposalIndex1 = 0; // 'a'
+    var proposalIndex2 = 1; // 'a'
+
+    var voteCountProposalIndex1 = 0;      
+    var voteCountProposalIndex2 = 1;
+    var sig = signAddress(signer, sender);
+          
+    return Didle.deployed().then((instance) => {
+      didle = instance;
+      return didle.create(signer, "Meeting at the opera", false, ['a', 'b']);
+    }).then(() => {
+        return didle.vote("Bob", proposalIndex1, sig.h, sig.r, sig.s, sig.v);
+    }).then(() => {
+        return didle.vote("Bob", proposalIndex2, sig.h, sig.r, sig.s, sig.v);
+    }).then(() => {
+       return didle.voteCount.call(signer, proposalIndex1);
+    }).then(c => {
+       voteCountProposalIndex1 = c;
+       return didle.voteCount.call(signer, proposalIndex2);
+    }).then(c => {
+       voteCountProposalIndex2 = c;
+       assert.equal(voteCountProposalIndex1, 0);
+       assert.equal(voteCountProposalIndex2, 1);
+    });
+  });
+
 });
