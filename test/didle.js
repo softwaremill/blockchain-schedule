@@ -95,6 +95,35 @@ contract('Didle', function(accounts) {
     });
   });
 
+  it("emit an event when adding a vote", function() {
+    var signer = accounts[7];
+    var didle;
+    var proposalIndex = 0; // 'a'
+      
+    return Didle.deployed().then((instance) => {
+      didle = instance;
+      return didle.create(signer, "Secret meeting", false, ['x', 'y']);
+    }).then(r => {
+        var sig = signAddress(signer, sender);
+        return didle.voteE("Bob", proposalIndex, sig.h, sig.r, sig.s, sig.v);
+    }).then(r => {
+       var voteEvents = didle.VoteSingle({signer: signer});
+        voteEvents.watch(function(err, result) {
+            if (err) {
+                console.log(err);
+                assert.equal(1, 0);
+                return;
+            }
+            var event = result.args;
+            assert.equal(event.voter, sender);
+            assert.equal(event.signer, signer);
+            assert.equal(event.voterName, "Bob");
+            assert.equal(event.proposal, 0);
+            return;
+        })
+    });
+  });
+
   it("should add a vote and then update it", function() {
     var signer = accounts[4];
     var didle;
@@ -155,29 +184,6 @@ contract('Didle', function(accounts) {
        assert.equal(voteCountIndex0, 1);
        assert.equal(voteCountIndex1, -1);
        assert.equal(voteCountIndex2, 1);
-    });
-  });
-
-  it("serialize a voting", function() {
-    var signer = accounts[7];
-    var didle;
-    var sig = signAddress(signer, sender);
-    var sigJon = signAddress(signer, accounts[1]);
-      
-    return Didle.deployed().then((instance) => {
-      didle = instance;
-      return didle.create(signer, "Wedding reception", true, ["option-one", "two", "three"]);
-    }).then(() => {
-        return didle.voteMulti("Bob", [0, 2], [1], sig.h, sig.r, sig.s, sig.v);
-    }).then(() => {
-        return didle.voteMulti("Jon", [1], [2], sigJon.h, sigJon.r, sigJon.s, sigJon.v, {
-        from: accounts[1] // different sender
-      });
-    }).then(() => {
-        return didle.proposalNames(signer);
-    }).then(names => {
-       console.log(names);
-       assert.equal(1, 1); // TODO
     });
   });
 
