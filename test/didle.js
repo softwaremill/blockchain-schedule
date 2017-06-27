@@ -80,7 +80,6 @@ contract('Didle', function(accounts) {
   it("should add a vote", function() {
     var signer = accounts[3];
     var didle;
-    var createResult;
     var proposalIndex = 0; // 'a'
       
     return Didle.deployed().then((instance) => {
@@ -99,7 +98,6 @@ contract('Didle', function(accounts) {
   it("should add a vote and then update it", function() {
     var signer = accounts[4];
     var didle;
-    var createResult;
     var proposalIndex1 = 0; // 'a'
     var proposalIndex2 = 1; // 'a'
 
@@ -129,7 +127,6 @@ contract('Didle', function(accounts) {
  it("should cast a multivote", function() {
     var signer = accounts[5];
     var didle;
-    var createResult;
     var yesIndex1 = 0;
     var yesIndex2 = 2;
     var noIndex = 1;
@@ -161,10 +158,32 @@ contract('Didle', function(accounts) {
     });
   });
 
+  it("serialize a voting", function() {
+    var signer = accounts[7];
+    var didle;
+    var sig = signAddress(signer, sender);
+    var sigJon = signAddress(signer, accounts[1]);
+      
+    return Didle.deployed().then((instance) => {
+      didle = instance;
+      return didle.create(signer, "Wedding reception", true, ["option-one", "two", "three"]);
+    }).then(() => {
+        return didle.voteMulti("Bob", [0, 2], [1], sig.h, sig.r, sig.s, sig.v);
+    }).then(() => {
+        return didle.voteMulti("Jon", [1], [2], sigJon.h, sigJon.r, sigJon.s, sigJon.v, {
+        from: accounts[1] // different sender
+      });
+    }).then(() => {
+        return didle.proposalNames(signer);
+    }).then(names => {
+       console.log(names);
+       assert.equal(1, 1); // TODO
+    });
+  });
+
   it("should overwrite a multivote", function() {
     var signer = accounts[6];
     var didle;
-    var createResult;
     var yesIndex1 = 0;
     var yesIndex2 = 2;
     var noIndex = 1;
@@ -197,5 +216,8 @@ contract('Didle', function(accounts) {
        assert.equal(voteCountIndex2, -1);
     });
   });
+
+   
+    
 
 });
