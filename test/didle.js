@@ -64,7 +64,7 @@ contract('Didle', function(accounts) {
         // sign sender address with signer's private key        
         var hash = sha3Address(address); //we hash the original message to keep it as 32 bytes, regardless to the input size.
         var signedMsg = web3.eth.sign(signer, hash);
-        vTab = new Buffer(signedMsg.slice(130, 132), "hex"); // we care for the numeric value. The Ethereum function expects uint8 and not hex.
+        var vTab = new Buffer(signedMsg.slice(130, 132), "hex"); // we care for the numeric value. The Ethereum function expects uint8 and not hex.
         var ver = vTab[0].valueOf();
       if (ver <= 1)
           ver += 27;
