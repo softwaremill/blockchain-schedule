@@ -10,7 +10,7 @@ contract Didle {
 
       // This is a type for a single proposal.
     struct Proposal {
-        byte[128] name; 
+        bytes32 name; 
         int128 voteCount; // number of accumulated votes
     }
 
@@ -25,21 +25,25 @@ contract Didle {
 
     // Key here is the unique address generated for each voting, called "signer"
     mapping(address => Voting) public votings;
+
+    function votingName(address signer) constant returns (string) {
+        return votings[signer].name;
+    }
     
     function voteCount(address signer, uint8 proposalIndex) constant returns (int128) {
         return votings[signer].proposals[proposalIndex].voteCount;
     }
 
-    function proposalNames(address signer) constant returns (byte[128][] names) {
+    function proposalNames(address signer) constant returns (bytes32[] names) {
         var ps = votings[signer].proposals;
-        var arr = new byte[128][](ps.length);
+        var arr = new bytes32[](ps.length);
         for (uint i = 0; i < ps.length; i++) {
             arr[i] = ps[i].name;
         }
         return arr;
     }
 
-    function proposalName(address signer, uint8 proposalIndex) constant returns (byte[128] name) {
+    function proposalName(address signer, uint8 proposalIndex) constant returns (bytes32 name) {
         return votings[signer].proposals[proposalIndex].name;
     }
     
@@ -57,7 +61,7 @@ contract Didle {
         return string(b);          
     }
     
-    function create(address signer, string name, bool isMultiChoice, byte[128][] proposalNames) {
+    function create(address signer, string name, bool isMultiChoice, bytes32[] proposalNames) {
         var voting = votings[signer];
         require(isEmpty(voting.name));
                
