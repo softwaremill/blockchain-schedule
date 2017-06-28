@@ -13,8 +13,9 @@ contract('Didle', function(accounts) {
 
     var sender = accounts[0];
     
-    it("should initialize a new voting", function() {
+  it("should initialize a new voting", function() {
     var signer = accounts[1];
+    console.log(signer);
     var didle;
       
     return Didle.deployed().then((instance) => {
@@ -89,7 +90,9 @@ contract('Didle', function(accounts) {
         var sig = signAddress(signer, sender);
         return didle.vote("Bob", proposalIndex, sig.h, sig.r, sig.s, sig.v);
     }).then(r => {
-       return didle.voteCount.call(signer, proposalIndex);
+        console.log(">>>>>>>>>>>");
+
+        return didle.voteCount.call(signer, proposalIndex);
     }).then(c => {
        assert.equal(c, 1);
     });
