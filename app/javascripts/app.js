@@ -20,6 +20,12 @@ var newVoting = {
   proposals: []
 };
 
+var currentVoting = {
+    name: "",
+    proposals: [],
+    voters: new Object()
+}
+
 // The following code is simple to show off interacting with your contracts.
 // As your needs grow you will likely need to change its form and structure.
 // For application bootstrapping, check out window.addEventListener below.
@@ -102,10 +108,43 @@ window.App = {
           meta.votingName.call(didleId, {from: account}).then(function (name) {
           console.log("Name: " + name);
           document.getElementById("didleName").innerHTML = name;
+          currentVoting = {
+              name: "",
+              proposals: new Object(),
+              voters: new Object()
+          };
+              
+          self.loadEvents(meta);
       });         
       });
   },
 
+  loadEvents: function(meta) {
+      var events = meta.VoteSingle({signer: didleId});
+      events.watch(function(err, result) {
+          if (err) {
+              console.log(err);
+          }
+          else {
+              var event = result.args;
+              var voteObj = {
+                  name: event.voterName,
+                  proposal: event.proposal
+              };
+              currentVoting.voters[event.voter] = voteObj;
+              var currentProposalCount = currentVoting.proposals[event.proposal];
+              var newCount = 0;
+              if (currentProposalCount >= 0)
+                  newCount = currentProposalCount + 1;
+              else
+                  newCount = 1;
+              currentVoting.proposals[event.proposal] = newCount;
+              console.log(currentVoting);
+              
+          }
+      });
+  },
+    
   addOption: function(self) {
       return function() {
       var utc = new Date().toJSON().slice(0,10);
