@@ -2,10 +2,12 @@
     "compilerOptions": {
         "outDir": "./dist/",
         "sourceMap": true,
-        "noImplicitAny": true,
+        "newLine": "LF",  
         "module": "commonjs",
+        "moduleResolution": "node",
         "target": "es5",
-        "jsx": "react"
+        "jsx": "react",
+        "allowJs": true
     },
     "include": [
         "./src/**/*"
