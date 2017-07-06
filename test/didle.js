@@ -90,8 +90,6 @@ contract('Didle', function(accounts) {
         var sig = signAddress(signer, sender);
         return didle.vote("Bob", proposalIndex, sig.h, sig.r, sig.s, sig.v);
     }).then(r => {
-        console.log(">>>>>>>>>>>");
-
         return didle.voteCount.call(signer, proposalIndex);
     }).then(c => {
        assert.equal(c, 1);
