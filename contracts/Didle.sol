@@ -26,6 +26,10 @@ contract Didle {
     // Key here is the unique address generated for each voting, called "signer"
     mapping(address => Voting) public votings;
 
+    function voteSummary(address signer) constant returns (string, bytes32[]) {
+        return (votings[signer].name, proposalNames(signer));
+    }
+    
     function votingName(address signer) constant returns (string) {
         return votings[signer].name;
     }
@@ -79,87 +83,40 @@ contract Didle {
 
     event VoteSingle(address voter, address indexed signer, string voterName, uint8 proposal);
 
-    function voteE(string name, uint8 proposal, bytes32 senderHash, bytes32 r, bytes32 s, uint8 v) returns (int256) {
-        require(sha3(msg.sender) == senderHash);
-        var signer = ecrecover(senderHash, v, r, s);
+    function stringToBytes32(string memory source) returns (bytes32 result) {
+      assembly {
+          result := mload(add(source, 32))
+      }
+    }
+
+    function addressToString(address x) returns (string) {
+        bytes memory s = new bytes(40);
+        for (uint i = 0; i < 20; i++) {
+            byte b = byte(uint8(uint(x) / (2**(8*(19 - i)))));
+            byte hi = byte(uint8(b) / 16);
+            byte lo = byte(uint8(b) - 16 * uint8(hi));
+            s[2 * i] = char(hi);
+            s[2 * i + 1] = char(lo);            
+        }
+        return string(s);
+    }
+
+    function char(byte b) returns (byte c) {
+        if (b < 10) return byte(uint8(b) + 0x30);
+        else return byte(uint8(b) + 0x57);
+    }
+        
+    function addressKeccak(address addr) constant returns(bytes32) {
+        // The "42" here stands for string length of an address
+        return keccak256("\x19Ethereum Signed Message:\n420x", addressToString(addr));
+    }
+
+    function vote(string name, uint8 proposal, bytes32 prefixedSenderHash, bytes32 r, bytes32 s, uint8 v) returns (uint256) {
+        require(addressKeccak(msg.sender) == prefixedSenderHash);
+        var signer = ecrecover(prefixedSenderHash, v, r, s);
         var voting = votings[signer];
         require(!isEmpty(voting.name));
-        require(!voting.isMultiChoice);
         require(proposal < voting.proposals.length);
         VoteSingle(msg.sender, signer, name, proposal);
     }
-
-    function vote(string name, uint8 proposal, bytes32 senderHash, bytes32 r, bytes32 s, uint8 v) {
-        require(sha3(msg.sender) == senderHash);
-        var signer = ecrecover(senderHash, v, r, s);
-        var voting = votings[signer];
-        require(!isEmpty(voting.name));
-        require(!voting.isMultiChoice);
-
-        var voter = voting.voters[msg.sender];
-        if (isEmpty(voter.name)) { // first vote
-            voter.name = name;
-            voting.votersIndex[voting.voteCount] = msg.sender;
-            voting.voteCount += 1;
-            voter.yesIndexes.push(proposal);
-            voting.proposals[proposal].voteCount += 1;
-        }
-        else { // vote update
-            var prevProposal = voter.yesIndexes[0];
-            voting.proposals[prevProposal].voteCount -= 1;
-            voter.yesIndexes[0] = proposal;
-            voting.proposals[proposal].voteCount += 1;            
-        }
-    }
-
-    function voteMultiWrite(address signer, uint8[] yesProposals, uint8[] noProposals) internal {
-       var voting = votings[signer];
-       var voter = voting.voters[msg.sender];
-       for (uint i = 0; i < yesProposals.length; i++) {
-         // TODO reject duplicates
-         voter.yesIndexes.push(yesProposals[i]);
-         voting.proposals[yesProposals[i]].voteCount += 1;
-       }
-            
-       for (uint j = 0; j < noProposals.length; j++) {
-         // TODO reject duplicates
-         voter.noIndexes.push(noProposals[j]);
-         voting.proposals[noProposals[j]].voteCount -= 1;
-       }        
-    }
-
-    function cancelSenderVotes(address signer) internal {
-       var voting = votings[signer];
-       var voter = voting.voters[msg.sender];
-        for (uint i = 0; i < voter.yesIndexes.length; i++) {
-              var yesIndex = voter.yesIndexes[i];
-              voting.proposals[yesIndex].voteCount -= 1;
-           }
-           for (uint j = 0; j < voter.noIndexes.length; j++) {
-              var noIndex = voter.noIndexes[j];
-              voting.proposals[noIndex].voteCount += 1;
-           }
-        
-    }
-
-    function voteMulti(string name, uint8[] yesProposals, uint8[] noProposals, bytes32 senderHash, bytes32 r, bytes32 s, uint8 v) {
-       require(sha3(msg.sender) == senderHash);
-       var signer = ecrecover(senderHash, v, r, s);
-       var voting = votings[signer];
-       require(!isEmpty(voting.name));
-       require(voting.isMultiChoice);
-       // TODO reject duplicates
-
-       var voter = voting.voters[msg.sender];
-       if (isEmpty(voter.name)) {
-           voter.name = name;
-           voting.votersIndex[voting.voteCount] = msg.sender;
-           voting.voteCount += 1;
-       }
-       else {
-           cancelSenderVotes(signer);
-       }
-       voteMultiWrite(signer, yesProposals, noProposals);
-    }
-
 }
