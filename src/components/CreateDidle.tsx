@@ -59,10 +59,10 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
             let meta
             this.props.didle.deployed().then((instance) => {
                 meta = instance
-                return meta.create(didleId, this.state.name, false, this.state.options, { from: this.props.account, gas: 1334400 })
+                return meta.create(didleId, this.state.name, this.state.options, { from: this.props.account, gas: 1334400 })
                     .then(r => {
                         console.log("Contract executed")
-                        history.push('/vote?id=' + didleId + '&key=' + didleKey + '&b=' + r.receipt.blockNumber)
+                        history.push('/vote?key=' + didleKey + '&b=' + r.receipt.blockNumber)
                     })
             })
         }
@@ -165,6 +165,12 @@ export default class CreateDidle extends React.Component<{}, DidleState> {
             this.setState({
                 account: accs[0]
             })
+
+
+
+            var accounts = this.web3.eth.accounts;
+            console.log(accounts[0]);
+
         })
     }
 

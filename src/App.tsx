@@ -10,7 +10,6 @@ import Vote from './components/Vote';
 
 class App extends React.Component<{}, {}> {
     render() {
-        console.log("aaaa")
         return (
             < Router >
                 <div className="container">

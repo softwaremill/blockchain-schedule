@@ -2,6 +2,7 @@ import * as React from 'react'
 import * as Web3 from 'web3'
 import * as ethjs from 'ethjs-account'
 import * as contract from 'truffle-contract'
+import * as cryptoutils from '../cryptoutils';
 const didleArtifacts = require('../../build/contracts/Didle.json')
 import './../app.css'
 
@@ -14,75 +15,46 @@ type DidleKey = string
 type EthAccount = string
 type EventName = string
 type VotingMap = Map<VoterName, OptionIndex>
+type BlockNumber = number
 
 export interface DidleState {
     eventName: EventName
-    id: EthAccount
-    key: DidleKey
-    creationBlock: number
     account: EthAccount
-}
-
-interface VotingFormProps {
-    didle: any
-    eventName: EventName
-    id: EthAccount
-    key: DidleKey
-    account: EthAccount
-}
-
-interface VotingFormState {
+    availableOptions: Array<OptionName>
     votes: VotingMap
     userName: VoterName
     userVote: OptionIndex
-    availableOptions: Array<OptionName>
 }
 
-class VotingForm extends React.Component<VotingFormProps, VotingFormState> {
+interface VotingFormProps {
+    eventName: EventName
+    availableOptions: Array<OptionName>
+    votes: VotingMap
+    userName: VoterName
+    userVote: OptionIndex
+    onUserVoteUpdated: (any) => void
+    onUserNameUpdated: (any) => void
+    castVote: (any) => void
+}
+
+
+class VotingForm extends React.Component<VotingFormProps, {}> {
 
     constructor(props: VotingFormProps) {
         super(props)
-
-        this.state = {
-            votes: new Map,
-            userName: "Anonymous",
-            userVote: 0,
-            availableOptions: []
-        }
-        this.updateVoterName = this.updateVoterName.bind(this)
-        this.handleOptionChange = this.handleOptionChange.bind(this)
-        this.castVote = this.castVote.bind(this)
-
-    }
-
-    componentDidMount() {
-        // TODO listen on events
-    }
-
-    updateVoterName(event) {
-        this.setState({ ...this.state, userName: event.target.value })
-    }
-
-    handleOptionChange(event) {
-        this.setState({ ...this.state, userVote: +event.target.value })
-    }
-
-    castVote(event) {
-        // TODO send transaction and go to thank you page
     }
 
     render() {
-
         let headers: Array<JSX.Element> = [<th key="nameHeader">Voter name</th>]
-        headers = headers.concat(this.state.availableOptions.map(opt => {
+        headers = headers.concat(this.props.availableOptions.map(opt => {
             return <th key={opt}>{opt}</th>
         }))
 
         let voterRows: Array<JSX.Element> = []
-        this.state.votes.forEach((selectedOpt: OptionIndex, name: VoterName) => {
+        this.props.votes.forEach((selectedOpt: OptionIndex, name: VoterName) => {
 
             let voteColumns: Array<JSX.Element> = [<td key={name}>{name}</td>]
-            for (var i = 0; i < this.state.availableOptions.length; i++) {
+            for (var i = 0; i < this.props.availableOptions.length; i++) {
                 if (i == selectedOpt)
                     voteColumns.push(<td key={String(i)}>X</td>)
                 else
@@ -97,10 +69,10 @@ class VotingForm extends React.Component<VotingFormProps, VotingFormState> {
         });
 
         let radioColumns: Array<JSX.Element> = []
-        for (var i = 0; i < this.state.availableOptions.length; i++) {
+        for (var i = 0; i < this.props.availableOptions.length; i++) {
             radioColumns.push(
                 <td key={String(i)}>
-                    <input type="radio" value={String(i)} checked={this.state.userVote === i} onChange={this.handleOptionChange} />
+                    <input type="radio" value={String(i)} checked={this.props.userVote === i} onChange={this.props.onUserVoteUpdated} />
                 </td>
             )
         }
@@ -119,13 +91,13 @@ class VotingForm extends React.Component<VotingFormProps, VotingFormState> {
                         {voterRows}
                         <tr>
                             <td>
-                                <input type="text" value={this.state.userName} onChange={this.updateVoterName} />
+                                <input type="text" value={this.props.userName} onChange={this.props.onUserNameUpdated} />
                             </td>
                             {radioColumns}
                         </tr>
                     </tbody>
                 </table>
-                <button type="button" onClick={this.castVote}>Vote!</button>
+                <button type="button" onClick={this.props.castVote}>Vote!</button>
             </div >
         )
     }
@@ -135,24 +107,34 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     Didle: any
     web3: any
+    id: EthAccount
+    privKey: string
+    creationBlock: BlockNumber
+
 
     constructor(props: any) {
         super(props)
         this.Didle = contract(didleArtifacts)
-
         this.state = {
             account: "",
-            id: "",
-            key: "",
-            creationBlock: 0,
-            eventName: ""
+            eventName: "",
+            availableOptions: [],
+            votes: new Map,
+            userName: "Anonymous",
+            userVote: 0
         }
+        this.castVote = this.castVote.bind(this)
+        this.onUserNameUpdated = this.onUserNameUpdated.bind(this)
+        this.onUserVoteUpdated = this.onUserVoteUpdated.bind(this)
+        this.privKey = this.getParameterByName("key")
+        this.creationBlock = +this.getParameterByName("b")
+        this.id = ethjs.privateToAccount(this.privKey).address
     }
 
     componentDidMount() {
-        let self = this
         this.checkAndInstantiateWeb3()
         this.Didle.setProvider(this.web3.currentProvider)
+
 
         this.web3.eth.getAccounts((err: any, accs: any) => {
             if (err != null) {
@@ -164,13 +146,53 @@ export default class Vote extends React.Component<{}, DidleState> {
                 alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.")
                 return
             }
+
             this.setState({
-                account: accs[0],
-                id: self.getParameterByName("id"),
-                key: this.getParameterByName("key"),
-                creationBlock: +this.getParameterByName("b"),
+                ...this.state,
+                account: accs[0]
             })
 
+            this.Didle.deployed().then((instance: any) => {
+                const meta = instance
+                // 1 load name and options
+                console.log("Receiving data of survey " + this.id)
+                meta.voteSummary.call(this.id).then((response: any) => {
+                    const options = response[1].map((optHex: string) => {
+                        return this.web3.toUtf8(optHex)
+                    })
+                    this.setState({
+                        ...this.state,
+                        eventName: response[0],
+                        availableOptions: options
+                    })
+                })
+
+                // 2 start listening on events
+                console.log("Listening on events...")
+                const voteEvents = meta.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
+                voteEvents.watch((err: any, result: any) => {
+                    if (err) {
+                        console.log(err)
+                    }
+                    else {
+                        console.log("Event received")
+                        let currentVotes = this.state.votes
+                        // TODO update state votes
+                        console.log(result)
+                    }
+                })
+            })
+        })
+    }
+
+    castVote(event) {
+        this.Didle.deployed().then((instance: any) => {
+            const sig = cryptoutils.signAddress(this.privKey, this.state.account)
+            console.log(sig.r.toString(16))
+
+            instance.vote("Bob", 0, sig.h, sig.r, sig.s, sig.v, { from: this.state.account, gas: 1000000000 }).then((r: any) => {
+                console.log(r)
+            })
         })
     }
 
@@ -198,6 +220,22 @@ export default class Vote extends React.Component<{}, DidleState> {
         }
     }
 
+
+    onUserVoteUpdated(event: any) {
+        this.setState({
+            ...this.state,
+            userVote: +event.target.value
+        })
+
+    }
+
+    onUserNameUpdated(event: any) {
+        this.setState({
+            ...this.state,
+            userName: event.target.value
+        })
+    }
+
     render() {
         return (
             <div className="App">
@@ -207,12 +245,11 @@ export default class Vote extends React.Component<{}, DidleState> {
                 <p>To share this Didle, use following url: {window.location.href}</p>
                 <p className="App-intro">
                     Vote here!<br />
-                    id: {this.state.id}<br />
-                    key: {this.state.key}<br />
-                    block: {this.state.creationBlock}
+                    key: {this.privKey}<br />
+                    block: {this.creationBlock}
 
                 </p>
-                <VotingForm didle={this.Didle} eventName={this.state.eventName} id={this.state.id} key={this.state.key} account={this.state.account} />
+                <VotingForm eventName={this.state.eventName} userName={this.state.userName} availableOptions={this.state.availableOptions} votes={this.state.votes} userVote={this.state.userVote} onUserVoteUpdated={this.onUserVoteUpdated} onUserNameUpdated={this.onUserNameUpdated} castVote={this.castVote} />
             </div>
         )
     }
