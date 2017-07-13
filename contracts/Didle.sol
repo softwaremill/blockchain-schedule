@@ -2,13 +2,7 @@ pragma solidity ^0.4.11;
 
 contract Didle {
    
-    struct Voter {
-        string name;
-        uint8[] yesIndexes;
-        uint8[] noIndexes;
-    }
-
-      // This is a type for a single proposal.
+    // This is a type for a single proposal.
     struct Proposal {
         bytes32 name; 
         int128 voteCount; // number of accumulated votes
@@ -16,10 +10,7 @@ contract Didle {
 
     struct Voting {
         string name;
-        bool isMultiChoice;
         Proposal[] proposals;
-        mapping(address => Voter) voters;
-        mapping(uint => address) votersIndex;
         uint voteCount;
     }
 
@@ -65,7 +56,7 @@ contract Didle {
         return string(b);          
     }
     
-    function create(address signer, string name, bool isMultiChoice, bytes32[] proposalNames) {
+    function create(address signer, string name, bytes32[] proposalNames) {
         var voting = votings[signer];
         require(isEmpty(voting.name));
                
@@ -77,7 +68,6 @@ contract Didle {
             }));
         }
         voting.name = name;
-        voting.isMultiChoice = isMultiChoice;
         votings[signer] = voting;
     }
 
@@ -96,7 +86,7 @@ contract Didle {
             byte hi = byte(uint8(b) / 16);
             byte lo = byte(uint8(b) - 16 * uint8(hi));
             s[2 * i] = char(hi);
-            s[2 * i + 1] = char(lo);            
+            s[2*  i + 1] = char(lo);            
         }
         return string(s);
     }

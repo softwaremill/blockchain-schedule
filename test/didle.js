@@ -13,14 +13,13 @@ contract('Didle', function(accounts) {
       
     return Didle.deployed().then((instance) => {
       didle = instance;
-      return didle.create(signer, "SoftwareMill Birr June 2017", false, ['aa', 'bb']);
+      return didle.create(signer, "SoftwareMill Birr June 2017", ['aa', 'bb']);
     }).then(() => {
         return didle.voteSummary.call(signer);
     }).then((voting) => {
           assert.equal(voting[0], "SoftwareMill Birr June 2017");
           assert.equal(web3.toUtf8(voting[1][0]), ['aa']);
           assert.equal(web3.toUtf8(voting[1][1]), ['bb']);
-          // unfortunately the getter won't return nested array (not supported by solidity yet)
         });
   });
 
@@ -28,9 +27,9 @@ contract('Didle', function(accounts) {
     var signer = accounts[2];
 
     return Didle.deployed().then((instance) => {
-      return didle.create(signer, "First voting", false, ['a', 'b']);
+      return didle.create(signer, "First voting", ['a', 'b']);
     }).then(() => {
-        return didle.create(signer, "Second voting, for the same signer account", false, ['a', 'b']);
+        return didle.create(signer, "Second voting, for the same signer account", ['a', 'b']);
     }).catch((error)  => {
       return assert.equal(true, true);
     });
@@ -60,7 +59,7 @@ contract('Didle', function(accounts) {
       
     return Didle.deployed().then((instance) => {
       didle = instance;
-      return didle.create(signer, "A meeting", false, ['x', 'y']);
+      return didle.create(signer, "A meeting", ['x', 'y']);
     }).then(r => {
         var sig = signAddress(signer, sender, didle);
         return didle.vote("Bob", 0, sig.h, sig.r, sig.s, sig.v);
