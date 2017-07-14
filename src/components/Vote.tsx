@@ -7,6 +7,11 @@ const didleArtifacts = require('../../build/contracts/Didle.json')
 import './../app.css'
 
 
+interface VoteData {
+    name: VoterName,
+    index: OptionIndex
+}
+
 type VoterName = string
 type OptionIndex = number
 type OptionName = string
@@ -14,7 +19,7 @@ type DidleId = string
 type DidleKey = string
 type EthAccount = string
 type EventName = string
-type VotingMap = Map<VoterName, OptionIndex>
+type VotingMap = Map<EthAccount, VoteData>
 type BlockNumber = number
 
 export interface DidleState {
@@ -51,18 +56,18 @@ class VotingForm extends React.Component<VotingFormProps, {}> {
         }))
 
         let voterRows: Array<JSX.Element> = []
-        this.props.votes.forEach((selectedOpt: OptionIndex, name: VoterName) => {
+        this.props.votes.forEach((vote: VoteData, voter: EthAccount) => {
 
-            let voteColumns: Array<JSX.Element> = [<td key={name}>{name}</td>]
+            let voteColumns: Array<JSX.Element> = [<td key={vote.name}>{vote.name}</td>]
             for (var i = 0; i < this.props.availableOptions.length; i++) {
-                if (i == selectedOpt)
+                if (i == vote.index)
                     voteColumns.push(<td key={String(i)}>X</td>)
                 else
                     voteColumns.push(<td key={String(i)}></td>)
             }
 
             voterRows.push(
-                <tr key={name}>
+                <tr key={vote.name}>
                     {voteColumns}
                 </tr>
             )
@@ -170,15 +175,22 @@ export default class Vote extends React.Component<{}, DidleState> {
                 // 2 start listening on events
                 console.log("Listening on events...")
                 const voteEvents = meta.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
-                voteEvents.watch((err: any, result: any) => {
+                voteEvents.watch((err: any, event: any) => {
                     if (err) {
                         console.log(err)
                     }
                     else {
                         console.log("Event received")
+                        console.log(event)
                         let currentVotes = this.state.votes
-                        // TODO update state votes
-                        console.log(result)
+                        const newVote: VoteData = {
+                            name: event.args.voterName,
+                            index: event.args.proposal
+                        }
+                        this.setState({
+                            ...this.state,
+                            votes: currentVotes.set(event.args.voter, newVote)
+                        })
                     }
                 })
             })
@@ -188,9 +200,7 @@ export default class Vote extends React.Component<{}, DidleState> {
     castVote(event) {
         this.Didle.deployed().then((instance: any) => {
             const sig = cryptoutils.signAddress(this.privKey, this.state.account)
-            console.log(sig.r.toString(16))
-
-            instance.vote("Bob", 0, sig.h, sig.r, sig.s, sig.v, { from: this.state.account, gas: 1000000000 }).then((r: any) => {
+            instance.vote(this.state.userName, this.state.userVote, sig.h, sig.r, sig.s, sig.v, { from: this.state.account }).then((r: any) => {
                 console.log(r)
             })
         })
