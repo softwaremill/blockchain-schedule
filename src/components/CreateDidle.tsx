@@ -37,17 +37,14 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
         this.state = { name: "", options: [], newOption: utc, formError: false, formErrorMsg: "" }
         this.handleInputChange = this.handleInputChange.bind(this)
         this.addNewDate = this.addNewDate.bind(this)
-        this.validateInput = this.validateInput.bind(this)
+        this.validInput = this.validInput.bind(this)
         this.createDidle = this.createDidle.bind(this)
         this.handleNameChange = this.handleNameChange.bind(this)
     }
 
     createDidle(history: any) {
-        if (this.state.options.some(x => x === this.state.newOption)) {
-            this.setState({ ...this.state, formError: true, formErrorMsg: "Option duplicates not allowed." })
-        }
         if (this.state.options.length == 0) {
-            this.setState({ ...this.state, formError: true, formErrorMsg: "Empty option list not allowed." })
+            this.setState({ formError: true, formErrorMsg: "Empty option list not allowed." })
         }
         else {
             let signer = ethjs.generate('892h@fsdf11ks8sk^2h8s8shfs.jk39hsoi@hohskd')
@@ -69,37 +66,31 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
     }
 
     addNewDate() {
-        this.validateInput(this.state.newOption)
-        if (!this.state.formError) {
+        if (this.validInput()) {
             let newOptions: Array<string> = this.state.options
             newOptions.push(this.state.newOption)
-            this.setState({ ...this.state, options: newOptions, newOption: this.now() })
+            this.setState({ options: newOptions, newOption: this.now() })
         }
     }
 
-    validateInput(newOptionVal) {
-        let err: boolean = false
-        let errMsg: string = ""
-        let newOptVal: string = this.state.newOption
-
-        if (this.state.options.some(x => x === newOptionVal)) {
-            err = true
-            errMsg = "Option duplicates not allowed."
+    validInput(): boolean {
+        if (this.state.options.some(x => x === this.state.newOption)) {
+            this.setState({ formError: true, formErrorMsg: "Duplicates not allowed" })
+            return false
         }
-        else
-            newOptVal = newOptionVal
-        this.setState({ ...this.state, formError: err, formErrorMsg: errMsg, newOption: newOptVal })
-
+        else {
+            this.setState({ formError: false })
+            return true
+        }
     }
 
     handleInputChange(event: any) {
-        this.validateInput(event.target.value)
+        this.setState({ newOption: event.target.value })
     }
 
     handleNameChange(event: any) {
-        this.setState({ ...this.state, name: event.target.value })
+        this.setState({ name: event.target.value })
     }
-
 
     render() {
         let rows: Array<JSX.Element> = []
@@ -137,8 +128,6 @@ export default class CreateDidle extends React.Component<{}, DidleState> {
 
     Didle: any
     web3: any
-    public state: DidleState
-
 
     constructor(props: any) {
         super(props)
@@ -152,7 +141,6 @@ export default class CreateDidle extends React.Component<{}, DidleState> {
             this.Didle.setProvider(this.web3.currentProvider)
 
             this.setState({
-                ...this.state,
                 account: accs[0]
             })
         });
