@@ -1,5 +1,5 @@
 import * as React from 'react'
-import * as Web3 from 'web3'
+import * as Web3 from '../web3'
 import * as ethjs from 'ethjs-account'
 import * as contract from 'truffle-contract'
 import * as cryptoutils from '../cryptoutils';
@@ -130,27 +130,54 @@ export default class Vote extends React.Component<{}, DidleState> {
         }
         this.castVote = this.castVote.bind(this)
         this.onUserNameUpdated = this.onUserNameUpdated.bind(this)
+        this.loadSummary = this.loadSummary.bind(this)
+        this.startListening = this.startListening.bind(this)
         this.onUserVoteUpdated = this.onUserVoteUpdated.bind(this)
         this.privKey = this.getParameterByName("key")
         this.creationBlock = +this.getParameterByName("b")
         this.id = ethjs.privateToAccount(this.privKey).address
     }
 
+    loadSummary(didle: any) {
+        console.log("Receiving data of survey " + this.id)
+        didle.voteSummary.call(this.id).then((response: any) => {
+            const options = response[1].map((optHex: string) => {
+                return this.web3.toUtf8(optHex)
+            })
+            this.setState({
+                ...this.state,
+                eventName: response[0],
+                availableOptions: options
+            })
+        })
+
+    }
+
+    startListening(didle: any) {
+        console.log("Listening on events...")
+        const voteEvents = didle.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
+        voteEvents.watch((err: any, event: any) => {
+            if (err) {
+                console.log(err)
+            }
+            else {
+                let currentVotes = this.state.votes
+                const newVote: VoteData = {
+                    name: event.args.voterName,
+                    index: event.args.proposal
+                }
+                this.setState({
+                    ...this.state,
+                    votes: currentVotes.set(event.args.voter, newVote)
+                })
+            }
+        })
+    }
+
     componentDidMount() {
-        this.checkAndInstantiateWeb3()
-        this.Didle.setProvider(this.web3.currentProvider)
-
-
-        this.web3.eth.getAccounts((err: any, accs: any) => {
-            if (err != null) {
-                alert("There was an error fetching your accounts.")
-                return
-            }
-
-            if (accs.length == 0) {
-                alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.")
-                return
-            }
+        Web3.initWeb3(this.web3, (accs: string[], initializedWeb3: any) => {
+            this.web3 = initializedWeb3
+            this.Didle.setProvider(this.web3.currentProvider)
 
             this.setState({
                 ...this.state,
@@ -158,43 +185,11 @@ export default class Vote extends React.Component<{}, DidleState> {
             })
 
             this.Didle.deployed().then((instance: any) => {
-                const meta = instance
-                // 1 load name and options
-                console.log("Receiving data of survey " + this.id)
-                meta.voteSummary.call(this.id).then((response: any) => {
-                    const options = response[1].map((optHex: string) => {
-                        return this.web3.toUtf8(optHex)
-                    })
-                    this.setState({
-                        ...this.state,
-                        eventName: response[0],
-                        availableOptions: options
-                    })
-                })
-
-                // 2 start listening on events
-                console.log("Listening on events...")
-                const voteEvents = meta.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
-                voteEvents.watch((err: any, event: any) => {
-                    if (err) {
-                        console.log(err)
-                    }
-                    else {
-                        console.log("Event received")
-                        console.log(event)
-                        let currentVotes = this.state.votes
-                        const newVote: VoteData = {
-                            name: event.args.voterName,
-                            index: event.args.proposal
-                        }
-                        this.setState({
-                            ...this.state,
-                            votes: currentVotes.set(event.args.voter, newVote)
-                        })
-                    }
-                })
+                this.loadSummary(instance)
+                this.startListening(instance)
             })
-        })
+
+        });
     }
 
     castVote(event) {
@@ -215,21 +210,6 @@ export default class Vote extends React.Component<{}, DidleState> {
         if (!results[2]) return ''
         return decodeURIComponent(results[2].replace(/\+/g, " "))
     }
-
-    checkAndInstantiateWeb3() {
-        console.log("Instantiating web3")
-        // Checking if Web3 has been injected by the browser (Mist/MetaMask)
-        if (typeof this.web3 !== 'undefined') {
-            console.warn("Using web3 detected from external source. If you find that your accounts don't appear or you have 0 MetaCoin, ensure you've configured that source properly. If using MetaMask, see the following link. Feel free to delete this warning. :) http://truffleframework.com/tutorials/truffle-and-metamask")
-            // Use Mist/MetaMask's provider
-            this.web3 = new Web3(this.web3.currentProvider)
-        } else {
-            console.warn("No web3 detected. Falling back to http://localhost:8545. You should remove this fallback when you deploy live, as it's inherently insecure. Consider switching to Metamask for development. More info here: http://truffleframework.com/tutorials/truffle-and-metamask")
-            // fallback - use your fallback strategy (local node / hosted node + in-dapp id mgmt / fail)
-            this.web3 = new Web3(new Web3.providers.HttpProvider("http://localhost:8545"))
-        }
-    }
-
 
     onUserVoteUpdated(event: any) {
         this.setState({
