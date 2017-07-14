@@ -139,13 +139,11 @@ export default class Vote extends React.Component<{}, DidleState> {
     }
 
     loadSummary(didle: any) {
-        console.log("Receiving data of survey " + this.id)
         didle.voteSummary.call(this.id).then((response: any) => {
             const options = response[1].map((optHex: string) => {
                 return this.web3.toUtf8(optHex)
             })
             this.setState({
-                ...this.state,
                 eventName: response[0],
                 availableOptions: options
             })
@@ -154,7 +152,6 @@ export default class Vote extends React.Component<{}, DidleState> {
     }
 
     startListening(didle: any) {
-        console.log("Listening on events...")
         const voteEvents = didle.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
         voteEvents.watch((err: any, event: any) => {
             if (err) {
@@ -167,7 +164,6 @@ export default class Vote extends React.Component<{}, DidleState> {
                     index: event.args.proposal
                 }
                 this.setState({
-                    ...this.state,
                     votes: currentVotes.set(event.args.voter, newVote)
                 })
             }
@@ -180,7 +176,6 @@ export default class Vote extends React.Component<{}, DidleState> {
             this.Didle.setProvider(this.web3.currentProvider)
 
             this.setState({
-                ...this.state,
                 account: accs[0]
             })
 
@@ -195,9 +190,7 @@ export default class Vote extends React.Component<{}, DidleState> {
     castVote(event) {
         this.Didle.deployed().then((instance: any) => {
             const sig = cryptoutils.signAddress(this.privKey, this.state.account)
-            instance.vote(this.state.userName, this.state.userVote, sig.h, sig.r, sig.s, sig.v, { from: this.state.account }).then((r: any) => {
-                console.log(r)
-            })
+            instance.vote(this.state.userName, this.state.userVote, sig.h, sig.r, sig.s, sig.v, { from: this.state.account })
         })
     }
 
@@ -213,7 +206,6 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     onUserVoteUpdated(event: any) {
         this.setState({
-            ...this.state,
             userVote: +event.target.value
         })
 
@@ -221,7 +213,6 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     onUserNameUpdated(event: any) {
         this.setState({
-            ...this.state,
             userName: event.target.value
         })
     }
