@@ -95,13 +95,12 @@ contract('Didle', function(accounts) {
     }).then(r => {
         return didle.vote("Bob", 1, sig.h, sig.r, sig.s, sig.v);
     }).then(r => {
-        return didle.voteCount.call(signer, 0);
-    }).then(count => {
-        assert.equal(count, '0');
-       return didle.voteCount.call(signer, 1);
-    }).then(count => {
-        assert.equal(count, '1');
-    })
+        return didle.voteSummary.call(signer);
+    }).then(summary => {
+        var voteCount = summary[2];
+        assert.equal(voteCount[0], "0");
+        assert.equal(voteCount[1], "1");
+    });
   });   
 
   it("should sum votes", function() {
@@ -126,12 +125,11 @@ contract('Didle', function(accounts) {
     }).then(r => {
         return didle.vote("Sender2", 1, sig2.h, sig2.r, sig2.s, sig2.v, {from: sender2});
     }).then(r => {
-        return didle.voteCount.call(signer, 0);
-    }).then(count => {
-        assert.equal(count, '2');
-       return didle.voteCount.call(signer, 1);
-    }).then(count => {
-        assert.equal(count, '1');
+        return didle.voteSummary.call(signer);
+    }).then(summary => {
+        var voteCount = summary[2];
+        assert.equal(voteCount[0], "2");
+        assert.equal(voteCount[1], "1");        
     })
   });   
 
