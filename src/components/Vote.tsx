@@ -4,8 +4,6 @@ import * as ethjs from 'ethjs-account'
 import * as contract from 'truffle-contract'
 import * as cryptoutils from '../cryptoutils';
 const didleArtifacts = require('../../build/contracts/Didle.json')
-import './../app.css'
-
 
 interface VoteData {
     name: VoterName,

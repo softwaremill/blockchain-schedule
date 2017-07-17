@@ -1,5 +1,9 @@
 import * as React from 'react'
 import styled from 'styled-components'
+import DidleButton from './DidleButton'
+import ErrorBox from './ErrorBox'
+import DidleInput from './DidleInput'
+import InputLabel from './InputLabel'
 const ethjs = require('ethjs-account')
 import { withRouter } from 'react-router-dom'
 
@@ -91,33 +95,42 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
             rows.push(<li key={opt}>{opt}</li>)
         })
 
-        rows.push(<li key="new"><input type="text" value={this.state.newOption} onChange={this.handleInputChange} /></li>)
 
         const CreateButton = withRouter(({ history }) => (
-            <button type="button" onClick={() => { this.createDidle(history) }}>Create didle</button>))
-
+            <DidleButton primary text="Create Didle" onClick={() => { this.createDidle(history) }} />))
 
         return (
             <div className={this.props.className}>
-                <input type="text" id="newdidle-name" value={this.state.name} onChange={this.handleNameChange} />
-                <br />
-                {
-                    this.state.formError
-                        ? <span>{this.state.formErrorMsg}</span>
-                        : null
-                }
+                <InputLabel>Event name</InputLabel>
+                <DidleInput value={this.state.name} onChange={this.handleNameChange} />
                 <ul>
                     {rows}
                 </ul>
-                <button type="button" onClick={this.addNewDate}>Add</button>
-                <CreateButton />
+                <div>
+                    <DidleInput value={this.state.newOption} onChange={this.handleInputChange} />
+                    <DidleButton text="Add" onClick={this.addNewDate} />
+                    <CreateButton />
+                </div>
+                {
+                    this.state.formError
+                        ? <ErrorBox><span>{this.state.formErrorMsg}</span></ErrorBox>
+                        : null
+                }
+
             </div>
         )
     }
 }
 
 const StyledDidleTable = styled(DidleTable) `
-  background: #2A2C39;
+    display: -ms-flexbox;
+    display: -webkit-flex;
+    display: flex;
+    -webkit-flex-direction: column;
+    width: 800px;
+    border: 1px #d6d6d6 solid;
+    background-color: #edf4fe;
+    padding: 5px;
 `
 
 export default StyledDidleTable
