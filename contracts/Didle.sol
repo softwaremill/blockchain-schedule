@@ -46,15 +46,6 @@ contract Didle {
         bytes memory tempEmptyStringTest = bytes(str);
         return (tempEmptyStringTest.length == 0);
     }
-
-    function bytesToStr(byte[128] byteArray) constant internal returns (string) {
-        string memory str1 = new string(byteArray.length);
-        bytes memory b = bytes(str1);
-        for (uint i = 0; i < byteArray.length; i++) {
-            b[i++] = byteArray[i];
-        }
-        return string(b);          
-    }
     
     function create(address signer, string name, bytes32[] proposalNames) {
         var voting = votings[signer];
@@ -72,12 +63,6 @@ contract Didle {
     }
 
     event VoteSingle(address voter, address indexed signer, string voterName, uint8 proposal);
-
-    function stringToBytes32(string memory source) returns (bytes32 result) {
-      assembly {
-          result := mload(add(source, 32))
-      }
-    }
 
     function addressToString(address x) returns (string) {
         bytes memory s = new bytes(40);
