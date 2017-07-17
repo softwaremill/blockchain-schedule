@@ -10,6 +10,7 @@ import CreateDidle from './components/CreateDidle';
 import Vote from './components/Vote';
 
 class App extends React.Component<{}, {}> {
+
     render() {
         injectGlobal`
   body {

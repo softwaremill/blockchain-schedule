@@ -216,7 +216,7 @@ export default class Vote extends React.Component<{}, DidleState> {
     }
 
     componentDidMount() {
-        Web3.initWeb3(this.web3, (accs: string[], initializedWeb3: any) => {
+        Web3.initWeb3((accs: string[], initializedWeb3: any) => {
             this.web3 = initializedWeb3
             this.Didle.setProvider(this.web3.currentProvider)
 
