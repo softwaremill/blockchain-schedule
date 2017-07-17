@@ -24,10 +24,14 @@ type EventName = string
 type VotingMap = Map<EthAccount, VoteData>
 type BlockNumber = number
 
+class VoteOption {
+    name: OptionName
+    voteCount: number
+}
 export interface DidleState {
     eventName: EventName
     account: EthAccount
-    availableOptions: Array<OptionName>
+    availableOptions: Array<VoteOption>
     votes: VotingMap
     userName: VoterName
     userVote: OptionIndex
@@ -35,7 +39,7 @@ export interface DidleState {
 
 interface VotingFormProps {
     eventName: EventName
-    availableOptions: Array<OptionName>
+    availableOptions: Array<VoteOption>
     votes: VotingMap
     userName: VoterName
     userVote: OptionIndex
@@ -96,8 +100,13 @@ class VotingForm extends React.Component<VotingFormProps, {}> {
 
     render() {
         let headers: Array<JSX.Element> = [<VoteHeaderCol key="nameHeader">Voter name</VoteHeaderCol>]
+        const maxVotes = Math.max(...this.props.availableOptions.map(opt => { return opt.voteCount }))
+
         headers = headers.concat(this.props.availableOptions.map(opt => {
-            return <VoteHeaderCol key={opt}>{opt}</VoteHeaderCol>
+            let trophy = ""
+            if (opt.voteCount == maxVotes)
+                trophy = " 🏆"
+            return <VoteHeaderCol key={opt.name}>{opt.name} ({opt.voteCount}){trophy}</VoteHeaderCol>
         }))
 
         let voterRows: Array<JSX.Element> = []
@@ -185,8 +194,11 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     loadSummary(didle: any) {
         didle.voteSummary.call(this.id).then((response: any) => {
-            const options = response[1].map((optHex: string) => {
-                return this.web3.toUtf8(optHex)
+            const options: Array<VoteOption> = response[1].map((optHex: string, index: number) => {
+                return {
+                    name: this.web3.toUtf8(optHex),
+                    voteCount: +response[2][index]
+                }
             })
             this.setState({
                 eventName: response[0],
@@ -198,11 +210,13 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     startListening(didle: any) {
         const voteEvents = didle.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
+        console.log("Listening")
         voteEvents.watch((err: any, event: any) => {
             if (err) {
                 console.log(err)
             }
             else {
+                console.log("Event!")
                 let currentVotes = this.state.votes
                 const newVote: VoteData = {
                     name: event.args.voterName,
@@ -235,7 +249,8 @@ export default class Vote extends React.Component<{}, DidleState> {
     castVote(event) {
         this.Didle.deployed().then((instance: any) => {
             const sig = cryptoutils.signAddress(this.privKey, this.state.account)
-            instance.vote(this.state.userName, this.state.userVote, sig.h, sig.r, sig.s, sig.v, { from: this.state.account })
+            instance.vote(this.state.userName, this.state.userVote, sig.h, sig.r, sig.s, sig.v, { from: this.state.account, gas: 160000 })
+                .then(() => this.loadSummary(instance))
         })
     }
 
