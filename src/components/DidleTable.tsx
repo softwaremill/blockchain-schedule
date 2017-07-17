@@ -3,6 +3,7 @@ import styled from 'styled-components'
 import DidleButton from './DidleButton'
 import ErrorBox from './ErrorBox'
 import DidleInput from './DidleInput'
+import { ShortInput } from './DidleInput'
 import InputLabel from './InputLabel'
 const ethjs = require('ethjs-account')
 import { withRouter } from 'react-router-dom'
@@ -107,7 +108,7 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
                     {rows}
                 </ul>
                 <div>
-                    <DidleInput value={this.state.newOption} onChange={this.handleInputChange} />
+                    <ShortInput value={this.state.newOption} onChange={this.handleInputChange} />
                     <DidleButton text="Add" onClick={this.addNewDate} />
                     <CreateButton />
                 </div>

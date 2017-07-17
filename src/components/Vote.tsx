@@ -1,6 +1,10 @@
 import * as React from 'react'
 import * as Web3 from '../web3'
 import * as ethjs from 'ethjs-account'
+import EthHeader from './EthHeader'
+import Button from './DidleButton'
+import { ShortInput } from './DidleInput'
+import styled from 'styled-components'
 import * as contract from 'truffle-contract'
 import * as cryptoutils from '../cryptoutils';
 const didleArtifacts = require('../../build/contracts/Didle.json')
@@ -40,6 +44,49 @@ interface VotingFormProps {
     castVote: (any) => void
 }
 
+const VoteHeader = styled.thead`
+    background-color: rgb(51, 133, 228);
+`
+
+const VoteHeaderCol = styled.th`
+    font-size: 13px;
+    color: white;
+    font-style: normal;
+    font-weight: normal;
+    padding-bottom: 6px;
+    padding-top: 5px;
+    padding-left: 10px;
+    padding-right: 10px;
+`
+
+const VoteCol = styled.td`
+    background-color: rgb(178, 209, 249);
+    vertical-align: middle;
+    text-align: center;
+    font-weight: normal;
+    font-size: 23px;
+`
+
+const VoterNameCol = VoteCol.extend`
+    font-size: 13px;
+`
+
+const VotesTable = styled.table`
+    padding: 15px;
+`
+
+const VoterNameInput = ShortInput.extend`
+    margin: 0px;
+    width: inherit;
+`
+
+const EventHeader = styled.h2`
+    color: rgb(85, 85, 85);
+`
+
+const UrlHint = styled.span`
+    font-size: 12px;
+`
 
 class VotingForm extends React.Component<VotingFormProps, {}> {
 
@@ -48,20 +95,20 @@ class VotingForm extends React.Component<VotingFormProps, {}> {
     }
 
     render() {
-        let headers: Array<JSX.Element> = [<th key="nameHeader">Voter name</th>]
+        let headers: Array<JSX.Element> = [<VoteHeaderCol key="nameHeader">Voter name</VoteHeaderCol>]
         headers = headers.concat(this.props.availableOptions.map(opt => {
-            return <th key={opt}>{opt}</th>
+            return <VoteHeaderCol key={opt}>{opt}</VoteHeaderCol>
         }))
 
         let voterRows: Array<JSX.Element> = []
         this.props.votes.forEach((vote: VoteData, voter: EthAccount) => {
 
-            let voteColumns: Array<JSX.Element> = [<td key={vote.name}>{vote.name}</td>]
+            let voteColumns: Array<JSX.Element> = [<VoterNameCol key={vote.name}>{vote.name}</VoterNameCol>]
             for (var i = 0; i < this.props.availableOptions.length; i++) {
                 if (i == vote.index)
-                    voteColumns.push(<td key={String(i)}>X</td>)
+                    voteColumns.push(<VoteCol key={String(i)}>✓</VoteCol>)
                 else
-                    voteColumns.push(<td key={String(i)}></td>)
+                    voteColumns.push(<VoteCol key={String(i)}></VoteCol>)
             }
 
             voterRows.push(
@@ -74,33 +121,33 @@ class VotingForm extends React.Component<VotingFormProps, {}> {
         let radioColumns: Array<JSX.Element> = []
         for (var i = 0; i < this.props.availableOptions.length; i++) {
             radioColumns.push(
-                <td key={String(i)}>
+                <VoteCol key={String(i)}>
                     <input type="radio" value={String(i)} checked={this.props.userVote === i} onChange={this.props.onUserVoteUpdated} />
-                </td>
+                </VoteCol>
             )
         }
 
 
         return (
-            <div className="voting-form" >
-                <span>{this.props.eventName}</span>
-                <table>
-                    <thead>
+            <div>
+                <EventHeader>{this.props.eventName}</EventHeader>
+                <VotesTable>
+                    <VoteHeader>
                         <tr>
                             {headers}
                         </tr>
-                    </thead>
+                    </VoteHeader>
                     <tbody>
                         {voterRows}
                         <tr>
                             <td>
-                                <input type="text" value={this.props.userName} onChange={this.props.onUserNameUpdated} />
+                                <VoterNameInput value={this.props.userName} onChange={this.props.onUserNameUpdated} />
                             </td>
                             {radioColumns}
                         </tr>
                     </tbody>
-                </table>
-                <button type="button" onClick={this.props.castVote}>Vote!</button>
+                </VotesTable>
+                <Button onClick={this.props.castVote} text="Vote!" primary />
             </div >
         )
     }
@@ -217,17 +264,9 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     render() {
         return (
-            <div className="App">
-                <div className="App-header">
-                    <h2>Current ETH account: {this.state.account}</h2>
-                </div>
-                <p>To share this Didle, use following url: {window.location.href}</p>
-                <p className="App-intro">
-                    Vote here!<br />
-                    key: {this.privKey}<br />
-                    block: {this.creationBlock}
-
-                </p>
+            <div>
+                <EthHeader>Current ETH account: {this.state.account}</EthHeader>
+                <UrlHint>To share this Didle, use following url: {window.location.href}</UrlHint>
                 <VotingForm eventName={this.state.eventName} userName={this.state.userName} availableOptions={this.state.availableOptions} votes={this.state.votes} userVote={this.state.userVote} onUserVoteUpdated={this.onUserVoteUpdated} onUserNameUpdated={this.onUserNameUpdated} castVote={this.castVote} />
             </div>
         )

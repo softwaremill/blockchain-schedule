@@ -1,7 +1,7 @@
 import * as React from 'react';
 import * as Web3 from '../web3'
 import DidleTable from './DidleTable'
-import styled from 'styled-components'
+import EthHeader from './EthHeader'
 const contract = require('truffle-contract')
 const didleArtifacts = require('../../build/contracts/Didle.json')
 
@@ -33,10 +33,6 @@ export default class CreateDidle extends React.Component<{}, DidleState> {
     }
 
     render() {
-        const EthHeader = styled.h2`
-          color: #AAA
-        `
-
         return (
             <div>
                 <div>
