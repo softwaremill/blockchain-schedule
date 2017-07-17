@@ -80,5 +80,59 @@ contract('Didle', function(accounts) {
         })
     });
   });   
-    
+
+  it("should override a vote", function() {
+    var signer = accounts[4];
+    var didle;
+    var sig;
+      
+    return Didle.deployed().then((instance) => {
+      didle = instance;
+      sig = signAddress(signer, sender, didle);
+      return didle.create(signer, "A meeting", ['x', 'y']);
+    }).then(r => {        
+        return didle.vote("Bob", 0, sig.h, sig.r, sig.s, sig.v);
+    }).then(r => {
+        return didle.vote("Bob", 1, sig.h, sig.r, sig.s, sig.v);
+    }).then(r => {
+        return didle.voteCount.call(signer, 0);
+    }).then(count => {
+        assert.equal(count, '0');
+       return didle.voteCount.call(signer, 1);
+    }).then(count => {
+        assert.equal(count, '1');
+    })
+  });   
+
+  it("should sum votes", function() {
+    var signer = accounts[3];
+    var sender0 = accounts[0];
+    var sender1 = accounts[1];
+    var sender2 = accounts[2];
+      
+    var didle;
+    var sig0, sig1, sig2;
+      
+    return Didle.deployed().then((instance) => {
+      didle = instance;
+      sig0 = signAddress(signer, sender0, didle);
+      sig1 = signAddress(signer, sender1, didle);
+      sig2 = signAddress(signer, sender2, didle);
+      return didle.create(signer, "A meeting", ['x', 'y']);
+    }).then(r => {        
+        return didle.vote("Sender0", 0, sig0.h, sig0.r, sig0.s, sig0.v, {from: sender0});
+    }).then(r => {
+        return didle.vote("Sender1", 0, sig1.h, sig1.r, sig1.s, sig1.v, {from: sender1});
+    }).then(r => {
+        return didle.vote("Sender2", 1, sig2.h, sig2.r, sig2.s, sig2.v, {from: sender2});
+    }).then(r => {
+        return didle.voteCount.call(signer, 0);
+    }).then(count => {
+        assert.equal(count, '2');
+       return didle.voteCount.call(signer, 1);
+    }).then(count => {
+        assert.equal(count, '1');
+    })
+  });   
+
 });

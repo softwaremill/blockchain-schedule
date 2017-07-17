@@ -8,9 +8,15 @@ contract Didle {
         int128 voteCount; // number of accumulated votes
     }
 
+    struct UserVote {
+        bool voted;
+        uint proposalIndex;
+    }
+
     struct Voting {
         string name;
         Proposal[] proposals;
+        mapping(address => UserVote) votes;
         uint voteCount;
     }
 
@@ -92,6 +98,17 @@ contract Didle {
         var voting = votings[signer];
         require(!isEmpty(voting.name));
         require(proposal < voting.proposals.length);
+
+        var prevVote = voting.votes[msg.sender];
+        if (prevVote.voted) {
+            voting.proposals[prevVote.proposalIndex].voteCount -= 1;
+        }
+        else {
+            voting.votes[msg.sender].voted = true;
+        }
+        voting.votes[msg.sender].proposalIndex = proposal;
+        voting.proposals[proposal].voteCount += 1;
+
         VoteSingle(msg.sender, signer, name, proposal);
     }
 }
