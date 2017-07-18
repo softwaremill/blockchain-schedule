@@ -17,7 +17,6 @@ contract Didle {
         string name;
         Proposal[] proposals;
         mapping(address => UserVote) votes;
-        uint voteCount;
     }
 
     // Key here is the unique address generated for each voting, called "signer"
@@ -25,10 +24,6 @@ contract Didle {
 
     function voteSummary(address signer) constant returns (string, bytes32[], int128[]) {
         return (votings[signer].name, proposalNames(signer), voteCounts(signer));
-    }
-    
-    function votingName(address signer) constant returns (string) {
-        return votings[signer].name;
     }
     
     function voteCounts(address signer) constant returns (int128[]) {
