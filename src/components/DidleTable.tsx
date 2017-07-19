@@ -44,16 +44,14 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
             this.setState({ formError: true, formErrorMsg: "Empty option list not allowed." })
         }
         else {
-            let signer = ethjs.generate('892h@fsdf11ks8sk^2h8s8shfs.jk39hsoi@hohskd')
-            let didleId: string = signer.address
-            let didleKey: string = signer.privateKey
+            const signer = ethjs.generate('892h@fsdf11ks8sk^2h8s8shfs.jk39hsoi@hohskd')
+            const didleId: string = signer.address
+            const didleKey: string = signer.privateKey
 
             console.log("Survey signer created, id = [" + didleId, "], key = [" + didleKey + "]")
             console.log("Calling contract to create the Didle")
-            let meta
             this.props.didle.deployed().then((instance) => {
-                meta = instance
-                return meta.create(didleId, this.state.name, this.state.options, { from: this.props.account, gas: 1334400 })
+                return instance.create(didleId, this.state.name, this.state.options, { from: this.props.account, gas: 1334400 })
                     .then(r => {
                         console.log("Contract executed")
                         history.push('/vote?key=' + didleKey + '&b=' + r.receipt.blockNumber)
@@ -128,7 +126,7 @@ const StyledDidleTable = styled(DidleTable) `
     display: -webkit-flex;
     display: flex;
     -webkit-flex-direction: column;
-    width: 800px;
+    width: 550px;
     border: 1px #d6d6d6 solid;
     background-color: #edf4fe;
     padding: 5px;
