@@ -3,7 +3,7 @@ const eutil = require('ethereumjs-util')
 export function signAddress(privKey, address) {
     const msg = new Buffer(address)
     const addressHash = eutil.hashPersonalMessage(Buffer.from(address)) // address+prefix, hashed
-    var sig = eutil.ecsign(addressHash, Buffer.from(eutil.stripHexPrefix(privKey), 'hex'))
+    const sig = eutil.ecsign(addressHash, Buffer.from(eutil.stripHexPrefix(privKey), 'hex'))
 
     return {
         h: eutil.bufferToHex(addressHash),
