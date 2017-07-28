@@ -1,6 +1,6 @@
 pragma solidity ^0.4.13;
 
-contract DistributedSchedule {
+contract DecentralizedSchedule {
    
     // This is a type for a single proposal.
     struct Proposal {

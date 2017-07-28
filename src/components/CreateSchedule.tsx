@@ -3,7 +3,7 @@ import * as Web3 from '../web3'
 import CreateForm from './CreateForm'
 import EthHeader from './EthHeader'
 const contract = require('truffle-contract')
-const ethArtifacts = require('../../build/contracts/DistributedSchedule.json')
+const ethArtifacts = require('../../build/contracts/DecentralizedSchedule.json')
 
 export interface FormState {
     account: string

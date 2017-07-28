@@ -1,8 +1,8 @@
-var DistributedSchedule = artifacts.require("DistributedSchedule");
+var DecentralizedSchedule = artifacts.require("DecentralizedSchedule");
 const eutil = require('ethereumjs-util')
 
 
-contract('DistributedSchedule', function(accounts) {
+contract('DecentralizedSchedule', function(accounts) {
 
     var sender = accounts[0];
     
@@ -10,7 +10,7 @@ contract('DistributedSchedule', function(accounts) {
     var signer = accounts[1];
     var meta;
       
-    return DistributedSchedule.deployed().then((instance) => {
+    return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
       return meta.create(signer, "SoftwareMill Birr June 2017", ['aa', 'bb']);
     }).then(() => {
@@ -26,7 +26,7 @@ contract('DistributedSchedule', function(accounts) {
     var signer = accounts[2];
     var meta;
 
-    return DistributedSchedule.deployed().then((instance) => {
+    return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
       return meta.create(signer, "First voting", ['a', 'b']);
     }).then(() => {
@@ -58,7 +58,7 @@ contract('DistributedSchedule', function(accounts) {
     var meta;
     var proposalIndex = 0; // 'x'
       
-    return DistributedSchedule.deployed().then((instance) => {
+    return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
       return meta.create(signer, "A meeting", ['x', 'y']);
     }).then(r => {
@@ -87,7 +87,7 @@ contract('DistributedSchedule', function(accounts) {
     var meta;
     var sig;
       
-    return DistributedSchedule.deployed().then((instance) => {
+    return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
       sig = signAddress(signer, sender, meta);
       return meta.create(signer, "A meeting", ['x', 'y']);
@@ -113,7 +113,7 @@ contract('DistributedSchedule', function(accounts) {
     var meta;
     var sig0, sig1, sig2;
       
-    return DistributedSchedule.deployed().then((instance) => {
+    return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
       sig0 = signAddress(signer, sender0, meta);
       sig1 = signAddress(signer, sender1, meta);

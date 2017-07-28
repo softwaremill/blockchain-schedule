@@ -95,7 +95,7 @@ class CreateForm extends React.Component<CreateScheduleProps, CreateScheduleStat
 
 
         const CreateButton = withRouter(({ history }) => (
-            <Button primary text="Create Schedule" onClick={() => { this.createSchedule(history) }} />))
+            <Button primary text="Create Event" onClick={() => { this.createSchedule(history) }} />))
 
         return (
             <div className={this.props.className}>

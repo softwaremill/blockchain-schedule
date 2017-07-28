@@ -7,7 +7,7 @@ import { ShortInput } from './Input'
 import styled from 'styled-components'
 import * as contract from 'truffle-contract'
 import * as cryptoutils from '../cryptoutils';
-const ethArtifacts = require('../../build/contracts/DistributedSchedule.json')
+const ethArtifacts = require('../../build/contracts/DecentralizedSchedule.json')
 
 interface VoteData {
     name: VoterName,

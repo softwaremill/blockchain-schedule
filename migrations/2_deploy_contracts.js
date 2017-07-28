@@ -1,5 +1,5 @@
-var DistributedSchedule = artifacts.require("./DistributedSchedule.sol");
+var DecentralizedSchedule = artifacts.require("./DecentralizedSchedule.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(DistributedSchedule);
+  deployer.deploy(DecentralizedSchedule);
 };
