@@ -6,7 +6,7 @@ import {
     Link
 } from 'react-router-dom';
 
-import CreateDidle from './components/CreateDidle';
+import CreateSchedule from './components/CreateSchedule';
 import Vote from './components/Vote';
 
 class App extends React.Component<{}, {}> {
@@ -23,7 +23,7 @@ class App extends React.Component<{}, {}> {
         return (
             < Router >
                 <div className="container">
-                    <Route exact path="/" component={CreateDidle} />
+                    <Route exact path="/" component={CreateSchedule} />
                     <Route exact path="/vote" component={Vote} />
                 </div>
             </Router >

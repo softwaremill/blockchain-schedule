@@ -1,14 +1,14 @@
 import * as React from 'react'
 import styled from 'styled-components'
-import DidleButton from './DidleButton'
+import Button from './Button'
 import ErrorBox from './ErrorBox'
-import DidleInput from './DidleInput'
-import { ShortInput } from './DidleInput'
+import Input from './Input'
+import { ShortInput } from './Input'
 import InputLabel from './InputLabel'
 const ethjs = require('ethjs-account')
 import { withRouter } from 'react-router-dom'
 
-export interface DidleOptionsState {
+export interface CreateScheduleState {
     name: string,
     options: Array<string>,
     newOption: string,
@@ -16,45 +16,44 @@ export interface DidleOptionsState {
     formErrorMsg: string
 }
 
-export interface DidleTableProps {
-    didle: any
+export interface CreateScheduleProps {
+    contract: any
     account: any
     className?: string
 }
 
-class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
+class CreateForm extends React.Component<CreateScheduleProps, CreateScheduleState> {
 
     now() {
         return new Date().toJSON().slice(0, 10)
     }
 
-    public constructor(props: DidleTableProps) {
+    public constructor(props: CreateScheduleProps) {
         super(props)
         let utc: string = this.now()
         this.state = { name: "", options: [], newOption: utc, formError: false, formErrorMsg: "" }
         this.handleInputChange = this.handleInputChange.bind(this)
         this.addNewDate = this.addNewDate.bind(this)
         this.validInput = this.validInput.bind(this)
-        this.createDidle = this.createDidle.bind(this)
+        this.createSchedule = this.createSchedule.bind(this)
         this.handleNameChange = this.handleNameChange.bind(this)
     }
 
-    createDidle(history: any) {
+    createSchedule(history: any) {
         if (this.state.options.length == 0) {
             this.setState({ formError: true, formErrorMsg: "Empty option list not allowed." })
         }
         else {
             const signer = ethjs.generate('892h@fsdf11ks8sk^2h8s8shfs.jk39hsoi@hohskd')
-            const didleId: string = signer.address
-            const didleKey: string = signer.privateKey
+            const ballotId: string = signer.address
+            const key: string = signer.privateKey
 
-            console.log("Survey signer created, id = [" + didleId, "], key = [" + didleKey + "]")
-            console.log("Calling contract to create the Didle")
-            this.props.didle.deployed().then((instance) => {
-                return instance.create(didleId, this.state.name, this.state.options, { from: this.props.account, gas: 1334400 })
+
+            this.props.contract.deployed().then((instance) => {
+                return instance.create(ballotId, this.state.name, this.state.options, { from: this.props.account, gas: 1334400 })
                     .then(r => {
                         console.log("Contract executed")
-                        history.push('/vote?key=' + didleKey + '&b=' + r.receipt.blockNumber)
+                        history.push('/vote?key=' + key + '&b=' + r.receipt.blockNumber)
                     })
             })
         }
@@ -96,18 +95,18 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
 
 
         const CreateButton = withRouter(({ history }) => (
-            <DidleButton primary text="Create Didle" onClick={() => { this.createDidle(history) }} />))
+            <Button primary text="Create Schedule" onClick={() => { this.createSchedule(history) }} />))
 
         return (
             <div className={this.props.className}>
                 <InputLabel>Event name</InputLabel>
-                <DidleInput value={this.state.name} onChange={this.handleNameChange} />
+                <Input value={this.state.name} onChange={this.handleNameChange} />
                 <ul>
                     {rows}
                 </ul>
                 <div>
                     <ShortInput value={this.state.newOption} onChange={this.handleInputChange} />
-                    <DidleButton text="Add" onClick={this.addNewDate} />
+                    <Button text="Add" onClick={this.addNewDate} />
                     <CreateButton />
                 </div>
                 {
@@ -121,7 +120,7 @@ class DidleTable extends React.Component<DidleTableProps, DidleOptionsState> {
     }
 }
 
-const StyledDidleTable = styled(DidleTable) `
+const StyledForm = styled(CreateForm) `
     display: -ms-flexbox;
     display: -webkit-flex;
     display: flex;
@@ -132,4 +131,4 @@ const StyledDidleTable = styled(DidleTable) `
     padding: 5px;
 `
 
-export default StyledDidleTable
+export default StyledForm

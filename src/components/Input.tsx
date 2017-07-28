@@ -1,7 +1,7 @@
 import * as React from 'react'
 import styled from 'styled-components'
 
-const DidleInput = styled.input`
+const Input = styled.input`
     border-color: rgb(183, 183, 183);
     border-width: 0.992647px;
     box-sizing: border-box;
@@ -19,8 +19,8 @@ const DidleInput = styled.input`
     width: 310px;
 `
 
-export const ShortInput = DidleInput.extend`
+export const ShortInput = Input.extend`
     width: 155px;
 `
 
-export default DidleInput
+export default Input

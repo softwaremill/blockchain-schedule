@@ -1,14 +1,14 @@
 import * as React from 'react'
 import styled from 'styled-components'
 
-interface DidleButtonProps {
+interface ButtonProps {
     className?: string
     primary?: boolean
     text: string
     onClick: (any) => void
 }
 
-class DidleButton extends React.Component<DidleButtonProps, {}> {
+class Button extends React.Component<ButtonProps, {}> {
     render() {
         return (
             <button type="button" className={this.props.className} onClick={this.props.onClick}>{this.props.text}</button>
@@ -16,7 +16,7 @@ class DidleButton extends React.Component<DidleButtonProps, {}> {
     }
 }
 
-const StyledButton = styled(DidleButton) `
+const StyledButton = styled(Button) `
           color: ${props => props.primary ? 'rgb(238, 238, 238)' : 'rgb(50, 50, 50)'
     };
  background: ${props => props.primary ? '#005dc9' : 'rgb(244, 244, 244)'

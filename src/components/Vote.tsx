@@ -2,12 +2,12 @@ import * as React from 'react'
 import * as Web3 from '../web3'
 import * as ethjs from 'ethjs-account'
 import EthHeader from './EthHeader'
-import Button from './DidleButton'
-import { ShortInput } from './DidleInput'
+import Button from './Button'
+import { ShortInput } from './Input'
 import styled from 'styled-components'
 import * as contract from 'truffle-contract'
 import * as cryptoutils from '../cryptoutils';
-const didleArtifacts = require('../../build/contracts/Didle.json')
+const ethArtifacts = require('../../build/contracts/DistributedSchedule.json')
 
 interface VoteData {
     name: VoterName,
@@ -17,8 +17,8 @@ interface VoteData {
 type VoterName = string
 type OptionIndex = number
 type OptionName = string
-type DidleId = string
-type DidleKey = string
+type VotingId = string
+type VotingKey = string
 type EthAccount = string
 type EventName = string
 type VotingMap = Map<EthAccount, VoteData>
@@ -28,7 +28,7 @@ class VoteOption {
     name: OptionName
     voteCount: number
 }
-export interface DidleState {
+export interface VotingState {
     eventName: EventName
     account: EthAccount
     availableOptions: Array<VoteOption>
@@ -37,7 +37,7 @@ export interface DidleState {
     userVote: OptionIndex
 }
 
-interface VotingFormProps {
+interface VotingProps {
     eventName: EventName
     availableOptions: Array<VoteOption>
     votes: VotingMap
@@ -92,9 +92,9 @@ const UrlHint = styled.span`
     font-size: 12px;
 `
 
-class VotingForm extends React.Component<VotingFormProps, {}> {
+class VotingForm extends React.Component<VotingProps, {}> {
 
-    constructor(props: VotingFormProps) {
+    constructor(props: VotingProps) {
         super(props)
     }
 
@@ -162,9 +162,9 @@ class VotingForm extends React.Component<VotingFormProps, {}> {
     }
 }
 
-export default class Vote extends React.Component<{}, DidleState> {
+export default class Vote extends React.Component<{}, VotingState> {
 
-    Didle: any
+    Contract: any
     web3: any
     id: EthAccount
     privKey: string
@@ -173,7 +173,7 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     constructor(props: any) {
         super(props)
-        this.Didle = contract(didleArtifacts)
+        this.Contract = contract(ethArtifacts)
         this.state = {
             account: "",
             eventName: "",
@@ -192,8 +192,8 @@ export default class Vote extends React.Component<{}, DidleState> {
         this.id = ethjs.privateToAccount(this.privKey).address
     }
 
-    loadSummary(didle: any) {
-        didle.voteSummary.call(this.id).then((response: any) => {
+    loadSummary(contract: any) {
+        contract.voteSummary.call(this.id).then((response: any) => {
             const options: Array<VoteOption> = response[1].map((optHex: string, index: number) => {
                 return {
                     name: this.web3.toUtf8(optHex),
@@ -208,9 +208,8 @@ export default class Vote extends React.Component<{}, DidleState> {
 
     }
 
-    startListening(didle: any) {
-        const voteEvents = didle.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
-        console.log("Listening")
+    startListening(contract: any) {
+        const voteEvents = contract.VoteSingle({ signer: this.id }, { fromBlock: this.creationBlock, toBlock: 'latest' })
         voteEvents.watch((err: any, event: any) => {
             if (err) {
                 console.log(err)
@@ -232,13 +231,13 @@ export default class Vote extends React.Component<{}, DidleState> {
     componentDidMount() {
         Web3.initWeb3((accs: string[], initializedWeb3: any) => {
             this.web3 = initializedWeb3
-            this.Didle.setProvider(this.web3.currentProvider)
+            this.Contract.setProvider(this.web3.currentProvider)
 
             this.setState({
                 account: accs[0]
             })
 
-            this.Didle.deployed().then((instance: any) => {
+            this.Contract.deployed().then((instance: any) => {
                 this.loadSummary(instance)
                 this.startListening(instance)
             })
@@ -247,7 +246,7 @@ export default class Vote extends React.Component<{}, DidleState> {
     }
 
     castVote(event) {
-        this.Didle.deployed().then((instance: any) => {
+        this.Contract.deployed().then((instance: any) => {
             const sig = cryptoutils.signAddress(this.privKey, this.state.account)
             instance.vote(this.state.userName, this.state.userVote, sig.h, sig.r, sig.s, sig.v, { from: this.state.account, gas: 160000 })
                 .then(() => this.loadSummary(instance))
@@ -281,7 +280,7 @@ export default class Vote extends React.Component<{}, DidleState> {
         return (
             <div>
                 <EthHeader>Current ETH account: {this.state.account}</EthHeader>
-                <UrlHint>To share this Didle, use following url: {window.location.href}</UrlHint>
+                <UrlHint>To share this event, use following url: {window.location.href}</UrlHint>
                 <VotingForm eventName={this.state.eventName} userName={this.state.userName} availableOptions={this.state.availableOptions} votes={this.state.votes} userVote={this.state.userVote} onUserVoteUpdated={this.onUserVoteUpdated} onUserNameUpdated={this.onUserNameUpdated} castVote={this.castVote} />
             </div>
         )

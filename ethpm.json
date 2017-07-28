@@ -1,7 +1,7 @@
 {
-    package_name: "didle",
+    package_name: "blockchain-schedule",
     version: "1.0.0",
-    description: "Distributed doodle for collaborative scheduling over Ethereum",
+    description: "Distributed collaborative scheduling on Ethereum blockchain",
     authors: [ "Krzysztof Ciesielski" ],
     keywords: [ "ethereum", "doodle" ],
     license: "MIT"

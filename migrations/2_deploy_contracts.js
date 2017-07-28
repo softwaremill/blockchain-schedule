@@ -1,5 +1,5 @@
-var Didle = artifacts.require("./Didle.sol");
+var DistributedSchedule = artifacts.require("./DistributedSchedule.sol");
 
 module.exports = function(deployer) {
-  deployer.deploy(Didle);
+  deployer.deploy(DistributedSchedule);
 };
