@@ -9,3 +9,5 @@ const ErrorBox = styled.div`
 `
 
 export default ErrorBox
+
+// dopoki nie ma w uzyciu skladni jsx, nie ma potrzeby dla rozszerzenia .tsx (wystarczy .ts)

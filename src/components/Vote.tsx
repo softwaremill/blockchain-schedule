@@ -7,7 +7,7 @@ import { ShortInput } from './Input'
 import styled from 'styled-components'
 import * as contract from 'truffle-contract'
 import * as cryptoutils from '../cryptoutils';
-const ethArtifacts = require('../../build/contracts/DistributedSchedule.json')
+const ethArtifacts = require('../../build/contracts/DistributedSchedule.json') // require zamiast import ?
 
 interface VoteData {
     name: VoterName,
@@ -24,10 +24,13 @@ type EventName = string
 type VotingMap = Map<EthAccount, VoteData>
 type BlockNumber = number
 
+// klasa uzywana tylko do adnotacji typów - zamien na type/interface
 class VoteOption {
     name: OptionName
     voteCount: number
 }
+
+// ten interfejs nigdzie indziej nie jest uzywany, zatem niepotrzebny export
 export interface VotingState {
     eventName: EventName
     account: EthAccount
@@ -91,7 +94,9 @@ const EventHeader = styled.h2`
 const UrlHint = styled.span`
     font-size: 12px;
 `
+// ^ troche tego duzo, moze warto wywalic cała tę gromadkę do osobnego pliku?
 
+// wywalilbym VotingForm do osobnego pliku, troche za duzo sie tutaj dzieje (w tym pliku)
 class VotingForm extends React.Component<VotingProps, {}> {
 
     constructor(props: VotingProps) {
@@ -103,12 +108,20 @@ class VotingForm extends React.Component<VotingProps, {}> {
         const maxVotes = Math.max(...this.props.availableOptions.map(opt => { return opt.voteCount }))
 
         headers = headers.concat(this.props.availableOptions.map(opt => {
+            // uzylbym ternary
             let trophy = ""
-            if (opt.voteCount == maxVotes)
+            if (opt.voteCount == maxVotes) // ===
                 trophy = " 🏆"
             return <VoteHeaderCol key={opt.name}>{opt.name} ({opt.voteCount}){trophy}</VoteHeaderCol>
         }))
 
+        // a najlepiej to imho tak (odkomentuj):
+        // const headers = [
+        //     <VoteHeaderCol key="nameHeader">Voter name</VoteHeaderCol>, 
+        //     ...this.props.availableOptions.map(opt => <VoteHeaderCol key={opt.name}>{opt.name} ({opt.voteCount}){opt.voteCount === maxVotes ? ' 🏆' : ''}</VoteHeaderCol>)
+        // ];
+
+        // forEach, brzydal! sprawdź komcio do CreateForm.tsx, linia 109 :) (hint: uzyj .map)
         let voterRows: Array<JSX.Element> = []
         this.props.votes.forEach((vote: VoteData, voter: EthAccount) => {
 
@@ -127,6 +140,9 @@ class VotingForm extends React.Component<VotingProps, {}> {
             )
         });
 
+        // to samo - prze(.map)uj po this.props.availableOptions
+        // hint: lambda w .map jako drugi argument dostaje index kolejnego elementu
+        // np. [a, b, c].map((element, idx) => {...})
         let radioColumns: Array<JSX.Element> = []
         for (var i = 0; i < this.props.availableOptions.length; i++) {
             radioColumns.push(
@@ -178,7 +194,7 @@ export default class Vote extends React.Component<{}, VotingState> {
             account: "",
             eventName: "",
             availableOptions: [],
-            votes: new Map,
+            votes: new Map, // jak juz to `new Map()` (ja wiem, ze bez nawiasow tez dziala, ale to jest bardzo brzydkie). Ponadto, w JS 99.9999% przypadkow, ktore chcialbys opedzic Map'em, opedzisz zwyklym obiektem - imho warto to zmienic.
             userName: "Anonymous",
             userVote: 0
         }
@@ -256,7 +272,7 @@ export default class Vote extends React.Component<{}, VotingState> {
     getParameterByName(name) {
         let url = window.location.href
         name = name.replace(/[\[\]]/g, "\\$&")
-        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"), // const (ew. let), nigdy var!
             results = regex.exec(url);
         if (!results) return null
         if (!results[2]) return ''
@@ -286,3 +302,5 @@ export default class Vote extends React.Component<{}, VotingState> {
         )
     }
 }
+
+// sredniki!

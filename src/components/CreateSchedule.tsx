@@ -3,7 +3,7 @@ import * as Web3 from '../web3'
 import CreateForm from './CreateForm'
 import EthHeader from './EthHeader'
 const contract = require('truffle-contract')
-const ethArtifacts = require('../../build/contracts/DistributedSchedule.json')
+const ethArtifacts = require('../../build/contracts/DistributedSchedule.json') // require zamiast import ?
 
 export interface FormState {
     account: string
@@ -11,7 +11,7 @@ export interface FormState {
 
 export default class CreateSchedule extends React.Component<{}, FormState> {
 
-    Contract: any
+    Contract: any // pole na klasie wielką literą - imho mozna małą ;)
     web3: any
 
     constructor(props: any) {

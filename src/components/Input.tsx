@@ -17,10 +17,12 @@ const Input = styled.input`
     padding-top: 4px;  
     text-align: start;
     width: 310px;
-`
+` // patrz komentarz do styli w Button.tsx :)
 
 export const ShortInput = Input.extend`
     width: 155px;
 `
 
 export default Input
+
+// dopoki nie ma w uzyciu skladni jsx, nie ma potrzeby dla rozszerzenia .tsx (wystarczy .ts)

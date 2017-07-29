@@ -1,4 +1,4 @@
-const eutil = require('ethereumjs-util')
+const eutil = require('ethereumjs-util') // require, a nie import?
 
 export function signAddress(privKey, address) {
     const msg = new Buffer(address)
@@ -12,3 +12,5 @@ export function signAddress(privKey, address) {
         v: sig.v
     }
 }
+
+// niepotrzebne rozszerzenie .tsx, wystarczy .ts

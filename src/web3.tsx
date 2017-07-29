@@ -6,15 +6,15 @@ export interface EthConnection {
 }
 
 export function initWeb3(cb: (accs: string[], initializedWeb3: any) => void): void {
-    let newWeb3 = checkAndInstantiateWeb3()
+    let newWeb3 = checkAndInstantiateWeb3() // const zamiast let
 
     newWeb3.eth.getAccounts((err: any, accs: any) => {
-        if (err != null) {
+        if (err != null) { // w js zawsze lepiej uzywac !== oraz === (!= oraz == są mniej restrykcyjne, zakładają tzw. koercję typów)
             alert("There was an error fetching your accounts.")
             return
         }
 
-        if (accs.length == 0) {
+        if (accs.length == 0) { // jw.
             alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.")
             return
         }
@@ -37,3 +37,6 @@ function checkAndInstantiateWeb3(): any {
         return new Web3(new Web3.providers.HttpProvider("http://localhost:8545"))
     }
 }
+
+// 1. ten plik nie musi miec rozszerzenia .tsx - wystarczy .ts - bowiem nie korzystasz tutaj z reactowego syntaxu jsx ;)
+// 2. mimo wszystko osobiscie jestem zwolennikiem stosowania srednikow na koncu linii - chocby ze wzgledu na tzw. 'automatic semicolon insertion', ktory w co najmniej jednym przypadku płata figle (https://stackoverflow.com/questions/12745743/automatic-semicolon-insertion-return-statements#answer-12746314)
