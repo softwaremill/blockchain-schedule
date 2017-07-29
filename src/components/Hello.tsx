@@ -9,3 +9,5 @@ export class Hello extends React.Component<HelloProps, undefined> {
         return <h1>Hello from {this.props.compiler} and {this.props.framework}!</h1>;
     }
 }
+
+// ten komponent chyba nigdzie nie jest uzywany, prawda? imho do wywalenias

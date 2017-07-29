@@ -19,7 +19,7 @@ class App extends React.Component<{}, {}> {
     margin-left: 25%;
     margin-right: 25%;
   }
-`;
+`; // formatowanie kodu, niepotrzebne spacje pomiedzy ostrymi nawiasami a nazwą komponentu
         return (
             < Router >
                 <div className="container">

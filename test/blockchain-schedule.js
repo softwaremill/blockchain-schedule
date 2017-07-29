@@ -132,6 +132,11 @@ contract('DistributedSchedule', function(accounts) {
         assert.equal(voteCount[0], "2");
         assert.equal(voteCount[1], "1");        
     })
+
+    // ^ te jednolinijkowce mozna krocej, np (omijasz klamry oraz return)
+    // .then(r => meta.vote("Sender1", 0, sig1.h, sig1.r, sig1.s, sig1.v, {from: sender1}))
   });   
 
 });
+
+// same var'y widze :P zamien na const / let.
