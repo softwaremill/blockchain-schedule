@@ -8,13 +8,7 @@ interface ButtonProps {
     onClick: (any) => void
 }
 
-class Button extends React.Component<ButtonProps, {}> {
-    render() {
-        return (
-            <button type="button" className={this.props.className} onClick={this.props.onClick}>{this.props.text}</button>
-        )
-    }
-}
+const Button = (props: ButtonProps) => <button type="button" className={props.className} onClick={props.onClick}>{props.text}</button>
 
 const StyledButton = styled(Button) `
           color: ${props => props.primary ? 'rgb(238, 238, 238)' : 'rgb(50, 50, 50)'
