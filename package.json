@@ -3,6 +3,7 @@
   "version": "0.0.0",
   "license": "MIT",
   "scripts": {
+    "truffle-compile": "truffle compile",
     "start": "webpack-dev-server --inline --content-base dist/ --history-api-fallback",
     "lint": "eslint --ext=js --ext=jsx --ignore-path .gitignore .",
     "build": "webpack",
@@ -44,6 +45,7 @@
     "ethjs-account": "0.1.0",
     "html-webpack-plugin": "^2.28.0",
     "style-loader": "^0.13.1",
+    "truffle": "^3.4.6",
     "truffle-contract": "^1.1.6",
     "ts-node": "~2.0.0",
     "tslint": "~4.4.2",
