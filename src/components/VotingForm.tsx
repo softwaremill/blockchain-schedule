@@ -1,5 +1,5 @@
 import * as React from 'react'
-import { range } from "lodash";
+import { range, toPairs } from "lodash";
 import Button from './Button'
 import { VoteData, VoteOption, VoterName, OptionIndex, EventName, VotingMap } from './../model/VotingModel'
 import { EthAccount } from './../model/EthModel'
@@ -62,6 +62,16 @@ export default class VotingForm extends React.Component<VotingFormProps, {}> {
 
     constructor(props: VotingFormProps) {
         super(props)
+        this.voteToRow = this.voteToRow.bind(this)
+    }
+
+    voteToRow(vote: [EthAccount, VoteData], index: number): JSX.Element {
+        const voteData = vote[1]
+        const cols = range(this.props.availableOptions.length).map(colIndex => {
+            const colChar = colIndex === voteData.index ? '✓' : ''
+            return <VoteCol key={String(colIndex)}>{colChar}</VoteCol>
+        })
+        return <tr key={voteData.name}>{cols}</tr>
     }
 
     render() {
@@ -71,40 +81,12 @@ export default class VotingForm extends React.Component<VotingFormProps, {}> {
             ...this.props.availableOptions.map(opt => <VoteHeaderCol key={opt.name}>{opt.name} ({opt.voteCount}){opt.voteCount === maxVotes ? ' 🏆' : ''}</VoteHeaderCol>)
         ];
 
+        const voteRows = toPairs(this.props.votes).map(this.voteToRow)
 
-        this.props.votes.entries().map((voter: EthAccount, vote: VoteData) => {
-            // for each vote, we create a table row - TODO export
-            const voteColumns = range(1, 5)
-        })
-
-
-        let voterRows: Array<JSX.Element> = []
-        this.props.votes.forEach((vote: VoteData, voter: EthAccount) => {
-
-            let voteColumns: Array<JSX.Element> = [<VoterNameCol key={vote.name}>{vote.name}</VoterNameCol>]
-            for (var i = 0; i < this.props.availableOptions.length; i++) {
-                if (i == vote.index)
-                    voteColumns.push(<VoteCol key={String(i)}>✓</VoteCol>)
-                else
-                    voteColumns.push(<VoteCol key={String(i)}></VoteCol>)
-            }
-
-            voterRows.push(
-                <tr key={vote.name}>
-                    {voteColumns}
-                </tr>
-            )
-        });
-
-        let radioColumns: Array<JSX.Element> = []
-        for (var i = 0; i < this.props.availableOptions.length; i++) {
-            radioColumns.push(
-                <VoteCol key={String(i)}>
-                    <input type="radio" value={String(i)} checked={this.props.userVote === i} onChange={this.props.onUserVoteUpdated} />
-                </VoteCol>
-            )
-        }
-
+        const radioColumns = range(this.props.availableOptions.length).map(i =>
+            <VoteCol key={String(i)}>
+                <input type="radio" value={String(i)} checked={this.props.userVote === i} onChange={this.props.onUserVoteUpdated} />
+            </VoteCol>)
 
         return (
             <div>
@@ -116,7 +98,7 @@ export default class VotingForm extends React.Component<VotingFormProps, {}> {
                         </tr>
                     </VoteHeader>
                     <tbody>
-                        {voterRows}
+                        {voteRows}
                         <tr>
                             <td>
                                 <VoterNameInput value={this.props.userName} onChange={this.props.onUserNameUpdated} />

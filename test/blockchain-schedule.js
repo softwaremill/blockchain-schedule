@@ -1,14 +1,14 @@
-var DecentralizedSchedule = artifacts.require("DecentralizedSchedule");
-const eutil = require('ethereumjs-util')
+const DecentralizedSchedule = artifacts.require("DecentralizedSchedule");
+import * as eutil from 'ethereumjs-util'
 
 
 contract('DecentralizedSchedule', function(accounts) {
 
-    var sender = accounts[0];
+  const sender = accounts[0];
     
   it("should initialize a new voting", function() {
-    var signer = accounts[1];
-    var meta;
+    const signer = accounts[1];
+    let meta;
       
     return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
@@ -23,8 +23,8 @@ contract('DecentralizedSchedule', function(accounts) {
   });
 
   it("should not initialize a new voting when a voting exists for given signer", function() {
-    var signer = accounts[2];
-    var meta;
+    const signer = accounts[2];
+    let meta;
 
     return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
@@ -37,9 +37,9 @@ contract('DecentralizedSchedule', function(accounts) {
   });
   
   function signAddress(signer, address, meta) {
-      var msg = new Buffer(address);
-      var sig = web3.eth.sign(signer, '0x' + msg.toString('hex'));
-      var res0 = eutil.fromRpcSig(sig);        
+      const msg = new Buffer(address);
+      const sig = web3.eth.sign(signer, '0x' + msg.toString('hex'));
+      const res0 = eutil.fromRpcSig(sig);        
       const prefixStr = "\x19Ethereum Signed Message:\n";
       const prefix = new Buffer(prefixStr);
       const bufferToHash = Buffer.concat([prefix, new Buffer(String(msg.length)), msg]);
@@ -54,25 +54,25 @@ contract('DecentralizedSchedule', function(accounts) {
   }
 
   it("should emit an event when adding a vote", function() {
-    var signer = accounts[7];
-    var meta;
-    var proposalIndex = 0; // 'x'
+    const signer = accounts[7];
+    let meta;
+    const proposalIndex = 0; // 'x'
       
     return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
       return meta.create(signer, "A meeting", ['x', 'y']);
     }).then(r => {
-        var sig = signAddress(signer, sender, meta);
+        const sig = signAddress(signer, sender, meta);
         return meta.vote("Bob", 0, sig.h, sig.r, sig.s, sig.v);
     }).then(r => {
-       var voteEvents = meta.VoteSingle({signer: signer});
+       const voteEvents = meta.VoteSingle({signer: signer});
         voteEvents.watch(function(err, result) {
             if (err) {
                 console.log(err);
                 assert.equal(1, 0);
                 return;
             }
-            var event = result.args;
+            const event = result.args;
             assert.equal(event.voter, sender);
             assert.equal(event.signer, signer);
             assert.equal(event.voterName, "Bob");
@@ -83,9 +83,9 @@ contract('DecentralizedSchedule', function(accounts) {
   });   
 
   it("should override a vote", function() {
-    var signer = accounts[4];
-    var meta;
-    var sig;
+    const signer = accounts[4];
+    let meta;
+    let sig;
       
     return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
@@ -98,20 +98,20 @@ contract('DecentralizedSchedule', function(accounts) {
     }).then(r => {
         return meta.voteSummary.call(signer);
     }).then(summary => {
-        var voteCount = summary[2];
+        const voteCount = summary[2];
         assert.equal(voteCount[0], "0");
         assert.equal(voteCount[1], "1");
     });
   });   
 
   it("should sum votes", function() {
-    var signer = accounts[3];
-    var sender0 = accounts[0];
-    var sender1 = accounts[1];
-    var sender2 = accounts[2];
+    const signer = accounts[3];
+    const sender0 = accounts[0];
+    const sender1 = accounts[1];
+    const sender2 = accounts[2];
       
-    var meta;
-    var sig0, sig1, sig2;
+    let meta;
+    let sig0, sig1, sig2;
       
     return DecentralizedSchedule.deployed().then((instance) => {
       meta = instance;
@@ -128,7 +128,7 @@ contract('DecentralizedSchedule', function(accounts) {
     }).then(r => {
         return meta.voteSummary.call(signer);
     }).then(summary => {
-        var voteCount = summary[2];
+        const voteCount = summary[2];
         assert.equal(voteCount[0], "2");
         assert.equal(voteCount[1], "1");        
     })

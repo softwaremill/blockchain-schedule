@@ -6,15 +6,15 @@ export interface EthConnection {
 }
 
 export function initWeb3(cb: (accs: string[], initializedWeb3: any) => void): void {
-    let newWeb3 = checkAndInstantiateWeb3()
+    const newWeb3 = checkAndInstantiateWeb3()
 
     newWeb3.eth.getAccounts((err: any, accs: any) => {
-        if (err != null) {
+        if (err !== null) {
             alert("There was an error fetching your accounts.")
             return
         }
 
-        if (accs.length == 0) {
+        if (accs.length === 0) {
             alert("Couldn't get any accounts! Make sure your Ethereum client is configured correctly.")
             return
         }

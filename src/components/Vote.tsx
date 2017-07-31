@@ -1,5 +1,6 @@
 import * as React from 'react'
 import * as Web3 from '../web3'
+import update from 'immutability-helper'
 import * as ethjs from 'ethjs-account'
 import VotingForm from './VotingForm'
 import { VoteData, VoteOption, VoterName, OptionIndex, EventName, VotingMap } from './../model/VotingModel'
@@ -39,7 +40,7 @@ export default class Vote extends React.Component<{}, VotingState> {
             account: "",
             eventName: "",
             availableOptions: [],
-            votes: new Map,
+            votes: {},
             userName: "Anonymous",
             userVote: 0
         }
@@ -77,13 +78,12 @@ export default class Vote extends React.Component<{}, VotingState> {
             }
             else {
                 console.log("Event!")
-                let currentVotes = this.state.votes
                 const newVote: VoteData = {
                     name: event.args.voterName,
                     index: event.args.proposal
                 }
                 this.setState({
-                    votes: currentVotes.set(event.args.voter, newVote)
+                    votes: update(this.state.votes, { [event.args.voterName]: { $set: newVote } })
                 })
             }
         })
@@ -115,9 +115,9 @@ export default class Vote extends React.Component<{}, VotingState> {
     }
 
     getParameterByName(name) {
-        let url = window.location.href
+        const url = window.location.href
         name = name.replace(/[\[\]]/g, "\\$&")
-        var regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
+        const regex = new RegExp("[?&]" + name + "(=([^&#]*)|&|#|$)"),
             results = regex.exec(url);
         if (!results) return null
         if (!results[2]) return ''

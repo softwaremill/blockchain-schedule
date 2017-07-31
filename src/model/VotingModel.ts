@@ -18,5 +18,5 @@ export type VoterName = string
 export type OptionIndex = number
 export type EventName = string
 export type VotingMap = {
-    [prop: EthAccount]: VoteData
+    [prop: string]: VoteData
 }
