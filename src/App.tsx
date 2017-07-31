@@ -21,12 +21,12 @@ class App extends React.Component<{}, {}> {
   }
 `;
         return (
-            < Router >
+            <Router>
                 <div className="container">
                     <Route exact path="/" component={CreateSchedule} />
                     <Route exact path="/vote" component={Vote} />
                 </div>
-            </Router >
+            </Router>
         );
     }
 }

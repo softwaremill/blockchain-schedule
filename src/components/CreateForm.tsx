@@ -2,10 +2,8 @@ import * as React from 'react'
 import styled from 'styled-components'
 import Button from './Button'
 import ErrorBox from './ErrorBox'
-import Input from './Input'
-import { ShortInput } from './Input'
-import InputLabel from './InputLabel'
-const ethjs = require('ethjs-account')
+import Input, { ShortInput, InputLabel } from './InputElements'
+import * as ethjs from 'ethjs-account'
 import { withRouter } from 'react-router-dom'
 
 export interface CreateScheduleState {
@@ -42,28 +40,27 @@ class CreateForm extends React.Component<CreateScheduleProps, CreateScheduleStat
     createSchedule(history: any) {
         if (this.state.options.length == 0) {
             this.setState({ formError: true, formErrorMsg: "Empty option list not allowed." })
-        }
-        else {
+        } else {
             const signer = ethjs.generate('892h@fsdf11ks8sk^2h8s8shfs.jk39hsoi@hohskd')
             const ballotId: string = signer.address
             const key: string = signer.privateKey
 
 
-            this.props.contract.deployed().then((instance) => {
-                return instance.create(ballotId, this.state.name, this.state.options, { from: this.props.account, gas: 1334400 })
-                    .then(r => {
-                        console.log("Contract executed")
-                        history.push('/vote?key=' + key + '&b=' + r.receipt.blockNumber)
-                    })
-            })
+            this.props.contract.deployed()
+                .then(instance => instance.create(ballotId, this.state.name, this.state.options, { from: this.props.account, gas: 1334400 }))
+                .then(r => {
+                    console.log("Contract executed")
+                    history.push('/vote?key=' + key + '&b=' + r.receipt.blockNumber)
+                })
         }
     }
 
     addNewDate() {
         if (this.validInput()) {
-            let newOptions: Array<string> = this.state.options
-            newOptions.push(this.state.newOption)
-            this.setState({ options: newOptions, newOption: this.now() })
+            this.setState({
+                options: [...this.state.options, this.state.newOption],
+                newOption: this.now()
+            });
         }
     }
 
@@ -71,29 +68,22 @@ class CreateForm extends React.Component<CreateScheduleProps, CreateScheduleStat
         if (this.state.options.some(x => x === this.state.newOption)) {
             this.setState({ formError: true, formErrorMsg: "Duplicates not allowed" })
             return false
-        }
-        else {
+        } else {
             this.setState({ formError: false })
             return true
         }
     }
 
-    handleInputChange(event: any) {
-        this.setState({ newOption: event.target.value })
+    handleInputChange(event: React.SyntheticEvent<HTMLInputElement>) {
+        this.setState({ newOption: event.currentTarget.value })
     }
 
-    handleNameChange(event: any) {
-        this.setState({ name: event.target.value })
+    handleNameChange(event: React.SyntheticEvent<HTMLInputElement>) {
+        this.setState({ name: event.currentTarget.value })
     }
 
     render() {
-        let rows: Array<JSX.Element> = []
-
-        this.state.options.forEach((opt: string) => {
-            rows.push(<li key={opt}>{opt}</li>)
-        })
-
-
+        const rows = this.state.options.map(opt => <li key={opt}>{opt}</li>)
         const CreateButton = withRouter(({ history }) => (
             <Button primary text="Create Event" onClick={() => { this.createSchedule(history) }} />))
 
@@ -121,14 +111,12 @@ class CreateForm extends React.Component<CreateScheduleProps, CreateScheduleStat
 }
 
 const StyledForm = styled(CreateForm) `
-    display: -ms-flexbox;
-    display: -webkit-flex;
-    display: flex;
-    -webkit-flex-direction: column;
-    width: 550px;
-    border: 1px #d6d6d6 solid;
     background-color: #edf4fe;
+    border: 1px #d6d6d6 solid;
+    display: flex;
+    flex-direction: column;
     padding: 5px;
+    width: 550px;
 `
 
 export default StyledForm

@@ -1,26 +1,25 @@
-import * as React from 'react'
 import styled from 'styled-components'
+import { DefaultFontSize } from './StyleConstants'
 
 const Input = styled.input`
-    border-color: rgb(183, 183, 183);
-    border-width: 0.992647px;
+    border: 1px solid rgb(183, 183, 183);
     box-sizing: border-box;
     color: rgb(85, 85, 85);
-    font-size: 13px;
+    font-size: ${DefaultFontSize};
     height: 30px;
     line-height: 15px;
-    width: 195px;
-    padding-bottom: 4px;
-    padding-left: 12px;
-    padding-right: 12px;
     margin-right: 10px;
-    padding-top: 4px;  
+    padding: 4px 12px 4px 12px;
     text-align: start;
     width: 310px;
 `
 
 export const ShortInput = Input.extend`
     width: 155px;
+`
+
+export const InputLabel = styled.label`
+      font-size: ${DefaultFontSize};
 `
 
 export default Input
