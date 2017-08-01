@@ -1,6 +1,5 @@
 import * as React from 'react'
 import * as Web3 from '../web3'
-import update from 'immutability-helper'
 import * as ethjs from 'ethjs-account'
 import VotingForm from './VotingForm'
 import { VoteData, VoteOption, VoterName, OptionIndex, EventName, VotingMap } from './../model/VotingModel'
@@ -83,7 +82,7 @@ export default class Vote extends React.Component<{}, VotingState> {
                     index: event.args.proposal
                 }
                 this.setState({
-                    votes: update(this.state.votes, { [event.args.voterName]: { $set: newVote } })
+                    votes: { ...this.state.votes, [event.args.voter]: newVote }
                 })
             }
         })

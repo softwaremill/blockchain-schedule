@@ -68,21 +68,19 @@ export default class VotingForm extends React.Component<VotingFormProps, {}> {
     voteToRow(vote: [EthAccount, VoteData], index: number): JSX.Element {
         const voteData = vote[1]
         const cols = range(this.props.availableOptions.length).map(colIndex => {
-            const colChar = colIndex === voteData.index ? '✓' : ''
+            const colChar = voteData.index == colIndex ? '✓' : ''
             return <VoteCol key={String(colIndex)}>{colChar}</VoteCol>
         })
-        return <tr key={voteData.name}>{cols}</tr>
+        return <tr key={voteData.name}><VoterNameCol key={voteData.name}>{voteData.name}</VoterNameCol>{cols}</tr>
     }
 
     render() {
         const maxVotes = Math.max(...this.props.availableOptions.map(opt => { return opt.voteCount }))
         const headers = [
             <VoteHeaderCol key="nameHeader">Voter name</VoteHeaderCol>,
-            ...this.props.availableOptions.map(opt => <VoteHeaderCol key={opt.name}>{opt.name} ({opt.voteCount}){opt.voteCount === maxVotes ? ' 🏆' : ''}</VoteHeaderCol>)
-        ];
+            ...this.props.availableOptions.map(opt => <VoteHeaderCol key={opt.name}>{opt.name} ({opt.voteCount}){opt.voteCount === maxVotes ? ' 🏆' : ''}</VoteHeaderCol>)];
 
         const voteRows = toPairs(this.props.votes).map(this.voteToRow)
-
         const radioColumns = range(this.props.availableOptions.length).map(i =>
             <VoteCol key={String(i)}>
                 <input type="radio" value={String(i)} checked={this.props.userVote === i} onChange={this.props.onUserVoteUpdated} />
